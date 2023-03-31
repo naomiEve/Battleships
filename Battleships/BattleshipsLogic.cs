@@ -1,7 +1,8 @@
 ﻿using System.Net;
-using Battleships.Data;
 using Battleships.Framework;
+using Battleships.Framework.Data;
 using Battleships.Framework.Networking;
+using Battleships.Messages;
 using Raylib_cs;
 
 namespace Battleships
@@ -20,6 +21,9 @@ namespace Battleships
         public BattleshipsLogic(LaunchOptions opts)
         {
             _peer = ConstructNetworkPeerFromOptions(opts);
+
+            RegisterMessages();
+
             _peer.WaitUntilReady();
         }
 
@@ -37,6 +41,14 @@ namespace Battleships
                 "client" => new NetworkClient(IPAddress.Parse(opts.Ip), opts.Port),
                 _ => throw new ArgumentException("Invalid mode specified!", nameof(opts))
             };
+        }
+
+        /// <summary>
+        /// Registers all of the actively used messages.
+        /// </summary>
+        private void RegisterMessages()
+        {
+            _peer.RegisterMessage<TestMessage>();
         }
 
         /// <inheritdoc/>

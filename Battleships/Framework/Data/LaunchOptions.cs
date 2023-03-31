@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Battleships.Data
+namespace Battleships.Framework.Data
 {
     /// <summary>
     /// The launch parameters for battleships.

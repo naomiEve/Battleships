@@ -1,4 +1,4 @@
-﻿namespace Battleships.Data
+﻿namespace Battleships.Framework.Data
 {
     /// <summary>
     /// A 2d vector of integers.

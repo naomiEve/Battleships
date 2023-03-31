@@ -1,6 +1,6 @@
 ﻿using Battleships;
-using Battleships.Data;
 using Battleships.Framework;
+using Battleships.Framework.Data;
 using CommandLine;
 
 Parser.Default.ParseArguments<LaunchOptions>(args)

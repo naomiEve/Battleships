@@ -21,6 +21,7 @@ namespace Battleships.Framework.Networking
         /// <param name="address">The address.</param>
         /// <param name="port">The port.</param>
         public NetworkClient(IPAddress address, int port)
+            : base()
         {
             _serverAddress = address;
             _serverPort = port;

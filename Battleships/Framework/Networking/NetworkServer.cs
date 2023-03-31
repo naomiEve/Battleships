@@ -20,6 +20,7 @@ namespace Battleships.Framework.Networking
         /// </summary>
         /// <param name="port">The port to listen on.</param>
         public NetworkServer(int port)
+            : base()
         {
             _server = new TcpListener(IPAddress.Any, port);
         }

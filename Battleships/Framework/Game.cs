@@ -1,4 +1,4 @@
-﻿using Battleships.Data;
+﻿using Battleships.Framework.Data;
 using Raylib_cs;
 
 namespace Battleships.Framework
