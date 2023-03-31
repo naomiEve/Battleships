@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 
@@ -12,6 +13,8 @@ namespace Battleships.Framework.Networking
         private readonly TcpClient _client;
         private readonly IPAddress _serverAddress;
         private readonly int _serverPort;
+
+        private NetworkStream? _stream;
 
         /// <summary>
         /// Constructs a new network client from the given address and port.
@@ -32,25 +35,25 @@ namespace Battleships.Framework.Networking
         {
             Console.WriteLine("Waiting for connection...");
             _client.Connect(_serverAddress, _serverPort);
-            
+
+            _stream = _client.GetStream();
+
             Console.WriteLine("Done!");
         }
 
         /// <inheritdoc/>
         protected override void SendBytes(ReadOnlySpan<byte> bytes)
         {
-            var stream = _client.GetStream();
-            stream.Write(bytes);
+            _stream!.Write(bytes);
         }
 
         /// <inheritdoc/>
         protected override int ReceiveBytes(Memory<byte> memory)
         {
-            var stream = _client.GetStream();
-            if (!stream.DataAvailable)
+            if (!_stream!.DataAvailable)
                 return 0;
 
-            var read = stream.Read(memory.Span);
+            var read = _stream!.Read(memory.Span);
             return read;
         }
     }

@@ -39,6 +39,7 @@ namespace Battleships.Framework.Networking
             MessageRegistry.RegisterMessage<LockstepPassingMessage>(message =>
             {
                 Console.WriteLine("Received a new lockstep passing message!");
+                IsCurrentLockstepPeer = true;
             });
 
             MessageRegistry.RegisterMessage<DisconnectMessage>(_ =>
@@ -70,12 +71,25 @@ namespace Battleships.Framework.Networking
         protected abstract int ReceiveBytes(Memory<byte> memory);
 
         /// <summary>
+        /// Passes the lockstep simulation ownership to the other client.
+        /// </summary>
+        private void PassLockstep()
+        {
+            if (!IsCurrentLockstepPeer)
+                return;
+
+            Send(new LockstepPassingMessage(), passLockstep: false);
+            IsCurrentLockstepPeer = false;
+        }
+
+        /// <summary>
         /// Send a network message.
         /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="message"></param>
-        /// <param name="mode"></param>
-        public void Send<TMessage>(TMessage message, SendMode mode = SendMode.Lockstep)
+        /// <typeparam name="TMessage">The type of the message to send.</typeparam>
+        /// <param name="message">The message to send.</param>
+        /// <param name="mode">The mode of sending (either lockstep, or extra info).</param>
+        /// <param name="passLockstep">Should we pass the lockstep ownership after sending this?</param>
+        public void Send<TMessage>(TMessage message, SendMode mode = SendMode.Lockstep, bool passLockstep = true)
             where TMessage : INetworkMessage
         {
             if (mode == SendMode.Lockstep)
@@ -89,17 +103,21 @@ namespace Battleships.Framework.Networking
                 return;
 
             var packet = new NetworkPacket(message, mode);
-
             var writer = new NetworkWriter(_buffer.Span);
             var written = packet.Serialize(ref writer);
 
             SendBytes(_buffer.Span[..written]);
+
+            Console.WriteLine($"sent {written} bytes for message of type {typeof(TMessage).FullName}.");
+
+            if (mode == SendMode.Lockstep && passLockstep)
+                PassLockstep();
         }
 
         /// <summary>
         /// Receives all the currently pending messages.
         /// </summary>
-        public void Receive()
+        public void ReceiveMessages()
         {
             while (true)
             {
@@ -107,14 +125,18 @@ namespace Battleships.Framework.Networking
                 if (read == 0)
                     break;
 
+                // For as long as we have data, try to read packets from it.
                 var reader = new NetworkReader(_buffer.Span);
-                var packet = new NetworkPacket(ref reader, MessageRegistry);
-
-                // If we have a message, try to handle it.
-                if (packet.Message != null &&
-                    MessageRegistry.TryGetMessageHandler(packet.MessageType, out var handler))
+                while (reader.Position < read)
                 {
-                    handler!(packet.Message);
+                    var packet = new NetworkPacket(ref reader, MessageRegistry);
+
+                    // If we have a message, try to handle it.
+                    if (packet.Message != null &&
+                        MessageRegistry.TryGetMessageHandler(packet.MessageType, out var handler))
+                    {
+                        handler!(packet.Message);
+                    }
                 }
             }
         }

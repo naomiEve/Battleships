@@ -18,6 +18,11 @@ namespace Battleships.Framework.Networking.Serialization
         private int _position;
 
         /// <summary>
+        /// How many bytes we've read so far.
+        /// </summary>
+        public int Position => _position;
+
+        /// <summary>
         /// Constructs a new network reader with the given buffer.
         /// </summary>
         /// <param name="buffer">The buffer.</param>

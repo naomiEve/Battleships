@@ -85,10 +85,13 @@ namespace Battleships
                 return true;
             }
 
-            _peer.Receive();
+            _peer.ReceiveMessages();
 
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
-                _peer.Send(new TestMessage(), SendMode.Extra);
+                _peer.Send(new TestMessage());
+
+            if (!_peer.IsCurrentLockstepPeer)
+                Raylib.DrawText("WAITING...", 0, 0, 40, Color.BLACK);
 
             return false;
         }
