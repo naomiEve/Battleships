@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Battleships.Framework.Networking
@@ -43,6 +44,17 @@ namespace Battleships.Framework.Networking
         {
             var stream = _client.GetStream();
             stream.Write(bytes);
+        }
+
+        /// <inheritdoc/>
+        protected override int ReceiveBytes(Memory<byte> memory)
+        {
+            var stream = _client.GetStream();
+            if (!stream.DataAvailable)
+                return 0;
+
+            var read = stream.Read(memory.Span);
+            return read;
         }
     }
 }

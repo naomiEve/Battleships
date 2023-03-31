@@ -34,13 +34,25 @@ namespace Battleships.Framework.Networking
         }
 
         /// <summary>
+        /// Constructs and reads a network packet from the reader.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        public NetworkPacket(NetworkReader reader)
+        {
+            Mode = reader.Read<SendMode>();
+            MessageType = reader.Read<int>();
+
+            Console.WriteLine($"Got a message of type {MessageType} with mode {Mode}.");
+        }
+
+        /// <summary>
         /// Serializes this packet into the network.
         /// </summary>
-        public int Serialize(NetworkWriter writer)
+        public int Serialize(ref NetworkWriter writer)
         {
             writer.Write(Mode);
             writer.Write(MessageType);
-            Message?.Serialize(writer);
+            Message?.Serialize(ref writer);
             return writer.Written;
         }
     }

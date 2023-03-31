@@ -7,12 +7,12 @@ namespace Battleships.Framework.Networking.Messages
     /// </summary>
     internal struct LockstepPassingMessage : INetworkMessage
     {
-        public void Serialize(NetworkWriter writer)
+        public void Serialize(ref NetworkWriter writer)
         {
 
         }
 
-        public void Deserialize(NetworkReader reader)
+        public void Deserialize(ref NetworkReader reader)
         {
 
         }

@@ -55,5 +55,15 @@ namespace Battleships.Framework.Networking
             var stream = _client!.GetStream();
             stream.Write(bytes);
         }
+
+        /// <inheritdoc/>
+        protected override int ReceiveBytes(Memory<byte> memory)
+        {
+            var stream = _client!.GetStream();
+            if (!stream.DataAvailable)
+                return 0;
+
+            return stream.Read(memory.Span);
+        }
     }
 }

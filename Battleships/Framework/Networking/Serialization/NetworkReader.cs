@@ -1,4 +1,6 @@
-﻿namespace Battleships.Framework.Networking.Serialization
+﻿using System.Runtime.CompilerServices;
+
+namespace Battleships.Framework.Networking.Serialization
 {
     /// <summary>
     /// A fast stack-allocated network reader.
@@ -33,11 +35,10 @@
             where TUnmanaged : unmanaged
         {
             var data = default(TUnmanaged);
-            fixed (byte* span = _buffer)
-                data = *((TUnmanaged*)span + _position);
+            fixed (byte* bufferPtr = _buffer)
+                data = Unsafe.Read<TUnmanaged>(bufferPtr + _position);
 
             _position += sizeof(TUnmanaged);
-
             return data;
         }
     }

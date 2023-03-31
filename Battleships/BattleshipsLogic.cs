@@ -80,6 +80,8 @@ namespace Battleships
                 return;
             }
 
+            _peer.Receive();
+
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
                 _peer.Send(new TestMessage());
         }

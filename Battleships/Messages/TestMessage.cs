@@ -5,12 +5,12 @@ namespace Battleships.Messages
 {
     internal struct TestMessage : INetworkMessage
     {
-        public void Serialize(NetworkWriter writer)
+        public void Serialize(ref NetworkWriter writer)
         {
             writer.Write(12345);
         }
 
-        public void Deserialize(NetworkReader reader)
+        public void Deserialize(ref NetworkReader reader)
         {
         }
     }

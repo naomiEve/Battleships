@@ -1,4 +1,5 @@
-﻿using Battleships.Framework.Networking.Messages;
+﻿using System;
+using Battleships.Framework.Networking.Messages;
 using Battleships.Framework.Networking.Serialization;
 
 namespace Battleships.Framework.Networking
@@ -21,7 +22,7 @@ namespace Battleships.Framework.Networking
         /// <summary>
         /// The send/receive buffer.
         /// </summary>
-        private Memory<byte> _buffer;
+        private readonly Memory<byte> _buffer;
 
         /// <summary>
         /// Is this peer the current peer that's being waited on by the lockstep simulation?
@@ -56,6 +57,12 @@ namespace Battleships.Framework.Networking
         protected abstract void SendBytes(ReadOnlySpan<byte> bytes);
 
         /// <summary>
+        /// Receives bytes from the other party.
+        /// </summary>
+        /// <param name="memory">The data to receive.</param>
+        protected abstract int ReceiveBytes(Memory<byte> memory);
+
+        /// <summary>
         /// Register a network message.
         /// </summary>
         /// <typeparam name="TMessage">The type of the message.</typeparam>
@@ -86,8 +93,26 @@ namespace Battleships.Framework.Networking
                 return;
 
             var packet = new NetworkPacket(message, mode);
-            var written = packet.Serialize(new NetworkWriter(_buffer));
+
+            var writer = new NetworkWriter(_buffer.Span);
+            var written = packet.Serialize(ref writer);
+
             SendBytes(_buffer.Span[..written]);
+        }
+
+        /// <summary>
+        /// Receives all the currently pending messages.
+        /// </summary>
+        public void Receive()
+        {
+            while (true)
+            {
+                var read = ReceiveBytes(_buffer);
+                if (read == 0)
+                    break;
+
+                var packet = new NetworkPacket(new NetworkReader(_buffer.Span));
+            }
         }
     }
 }

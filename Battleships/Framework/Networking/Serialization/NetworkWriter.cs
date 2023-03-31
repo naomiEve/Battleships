@@ -1,4 +1,6 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Battleships.Framework.Networking.Serialization
 {
@@ -10,12 +12,7 @@ namespace Battleships.Framework.Networking.Serialization
         /// <summary>
         /// The buffer we're writing to.
         /// </summary>
-        private readonly Memory<byte> _buffer;
-
-        /// <summary>
-        /// The buffer we're writing to.
-        /// </summary>
-        private readonly MemoryHandle _bufferHandle;
+        private readonly Span<byte> _buffer;
 
         /// <summary>
         /// Current position
@@ -31,10 +28,9 @@ namespace Battleships.Framework.Networking.Serialization
         /// Constructs a new network writer with the given buffer.
         /// </summary>
         /// <param name="buffer">The buffer.</param>
-        public NetworkWriter(Memory<byte> buffer)
+        public NetworkWriter(Span<byte> buffer)
         {
             _buffer = buffer;
-            _bufferHandle = buffer.Pin();
         }
 
         /// <summary>
@@ -45,8 +41,16 @@ namespace Battleships.Framework.Networking.Serialization
         public unsafe void Write<TUnmanaged>(TUnmanaged data)
             where TUnmanaged : unmanaged
         {
-            *((TUnmanaged*)_bufferHandle.Pointer + _position) = data;
+            fixed (byte* bufferPtr = _buffer)
+            {
+                Unsafe.Write(bufferPtr + _position, data);
 
+                Console.WriteLine($"Writing {data} of type {typeof(TUnmanaged).FullName}");
+                for (int i = 0; i < (_position + sizeof(TUnmanaged)); i++)
+                    Console.Write($"{*(bufferPtr + i):X2}");
+                Console.Write('\n');
+            }
+            
             _position += sizeof(TUnmanaged);
         }
 
@@ -65,7 +69,6 @@ namespace Battleships.Framework.Networking.Serialization
         /// </summary>
         public void Free()
         {
-            _bufferHandle.Dispose();
         }
     }
 }

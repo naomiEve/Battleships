@@ -10,11 +10,11 @@ namespace Battleships.Framework.Networking
         /// <summary>
         /// Serializes this message.
         /// </summary>
-        void Serialize(NetworkWriter writer);
+        void Serialize(ref NetworkWriter writer);
 
         /// <summary>
         /// Deserializes this message.
         /// </summary>
-        void Deserialize(NetworkReader reader);
+        void Deserialize(ref NetworkReader reader);
     }
 }
