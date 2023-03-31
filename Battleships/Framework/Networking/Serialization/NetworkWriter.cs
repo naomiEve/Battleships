@@ -1,6 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Battleships.Framework.Networking.Serialization
 {
@@ -42,14 +40,7 @@ namespace Battleships.Framework.Networking.Serialization
             where TUnmanaged : unmanaged
         {
             fixed (byte* bufferPtr = _buffer)
-            {
                 Unsafe.Write(bufferPtr + _position, data);
-
-                Console.WriteLine($"Writing {data} of type {typeof(TUnmanaged).FullName}");
-                for (int i = 0; i < (_position + sizeof(TUnmanaged)); i++)
-                    Console.Write($"{*(bufferPtr + i):X2}");
-                Console.Write('\n');
-            }
             
             _position += sizeof(TUnmanaged);
         }
@@ -62,13 +53,6 @@ namespace Battleships.Framework.Networking.Serialization
         {
             for (var i = 0; i < bytes.Length; i++)
                 Write(bytes[i]);
-        }
-
-        /// <summary>
-        /// Frees the associated buffer handle.
-        /// </summary>
-        public void Free()
-        {
         }
     }
 }
