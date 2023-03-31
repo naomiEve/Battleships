@@ -23,6 +23,7 @@ namespace Battleships.Framework.Networking
             : base()
         {
             _server = new TcpListener(IPAddress.Any, port);
+            IsCurrentLockstepPeer = true;
         }
 
         /// <summary>
@@ -46,6 +47,13 @@ namespace Battleships.Framework.Networking
 
             _client = _server.AcceptTcpClient();
             Console.WriteLine("Done!");
+        }
+
+        /// <inheritdoc/>
+        protected override void SendBytes(ReadOnlySpan<byte> bytes)
+        {
+            var stream = _client!.GetStream();
+            stream.Write(bytes);
         }
     }
 }

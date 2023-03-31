@@ -79,6 +79,9 @@ namespace Battleships
                 Raylib.CloseWindow();
                 return;
             }
+
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
+                _peer.Send(new TestMessage());
         }
     }
 }

@@ -37,5 +37,12 @@ namespace Battleships.Framework.Networking
             
             Console.WriteLine("Done!");
         }
+
+        /// <inheritdoc/>
+        protected override void SendBytes(ReadOnlySpan<byte> bytes)
+        {
+            var stream = _client.GetStream();
+            stream.Write(bytes);
+        }
     }
 }
