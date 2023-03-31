@@ -12,9 +12,6 @@ namespace Battleships.Framework.Networking
         private readonly TcpListener _server;
         private TcpClient? _client;
 
-        /// <inheritdoc/>
-        public override bool Ready => _client?.Connected == true;
-
         /// <summary>
         /// Construct a network server.
         /// </summary>

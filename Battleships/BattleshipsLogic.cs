@@ -2,6 +2,7 @@
 using Battleships.Framework;
 using Battleships.Framework.Data;
 using Battleships.Framework.Networking;
+using Battleships.Framework.Networking.Messages;
 using Battleships.Messages;
 using Raylib_cs;
 
@@ -48,12 +49,17 @@ namespace Battleships
         /// </summary>
         private void RegisterMessages()
         {
-            _peer.RegisterMessage<TestMessage>();
+            _peer.MessageRegistry.RegisterMessage<TestMessage>(mesg =>
+            {
+                var testMseg = (TestMessage)mesg;
+                Console.WriteLine($"Received a new test message! value={testMseg.value}");
+            });
         }
 
         /// <inheritdoc/>
         public void Destroy()
         {
+            _peer.Send<DisconnectMessage>(new DisconnectMessage(), SendMode.Extra);
             Console.WriteLine("goot bye :'(");
         }
 
@@ -71,19 +77,20 @@ namespace Battleships
         }
 
         /// <inheritdoc/>
-        public void Update(float dt)
+        public bool Update(float dt)
         {
             if (!_peer.Ready)
             {
                 Console.WriteLine("Connection lost.");
-                Raylib.CloseWindow();
-                return;
+                return true;
             }
 
             _peer.Receive();
 
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
-                _peer.Send(new TestMessage());
+                _peer.Send(new TestMessage(), SendMode.Extra);
+
+            return false;
         }
     }
 }

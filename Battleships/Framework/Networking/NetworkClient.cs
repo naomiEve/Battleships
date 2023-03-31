@@ -13,9 +13,6 @@ namespace Battleships.Framework.Networking
         private readonly IPAddress _serverAddress;
         private readonly int _serverPort;
 
-        /// <inheritdoc/>
-        public override bool Ready => _client.Connected;
-
         /// <summary>
         /// Constructs a new network client from the given address and port.
         /// </summary>

@@ -40,7 +40,8 @@ namespace Battleships.Framework
 
             while (!Raylib.WindowShouldClose())
             {
-                _logic.Update(Raylib.GetFrameTime());
+                if (_logic.Update(Raylib.GetFrameTime()))
+                    break;
 
                 Raylib.BeginDrawing();
                 _logic.Draw();

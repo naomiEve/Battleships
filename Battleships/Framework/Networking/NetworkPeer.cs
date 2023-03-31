@@ -1,5 +1,4 @@
-﻿using System;
-using Battleships.Framework.Networking.Messages;
+﻿using Battleships.Framework.Networking.Messages;
 using Battleships.Framework.Networking.Serialization;
 
 namespace Battleships.Framework.Networking
@@ -7,7 +6,7 @@ namespace Battleships.Framework.Networking
     /// <summary>
     /// An abstract lockstep network peer, common class for both the sevrer and client.
     /// </summary>
-    internal abstract class NetworkPeer
+    internal abstract partial class NetworkPeer
     {
         /// <summary>
         /// The maximum buffer size. (1MiB)
@@ -15,14 +14,14 @@ namespace Battleships.Framework.Networking
         private const int MAX_BUFFER_SIZE = 1024 * 1024;
 
         /// <summary>
-        /// The map from message numbers to their types. 
-        /// </summary>
-        private readonly Dictionary<int, Type> _messageTypeMap;
-
-        /// <summary>
         /// The send/receive buffer.
         /// </summary>
         private readonly Memory<byte> _buffer;
+
+        /// <summary>
+        /// The message registry, containing all of the packets.
+        /// </summary>
+        public MessageRegistry MessageRegistry { get; init; }
 
         /// <summary>
         /// Is this peer the current peer that's being waited on by the lockstep simulation?
@@ -34,16 +33,24 @@ namespace Battleships.Framework.Networking
         /// </summary>
         public NetworkPeer()
         {
-            _messageTypeMap = new Dictionary<int, Type>();
             _buffer = new Memory<byte>(new byte[MAX_BUFFER_SIZE]);
+            MessageRegistry = new MessageRegistry();
 
-            RegisterMessage<LockstepPassingMessage>();
+            MessageRegistry.RegisterMessage<LockstepPassingMessage>(message =>
+            {
+                Console.WriteLine("Received a new lockstep passing message!");
+            });
+
+            MessageRegistry.RegisterMessage<DisconnectMessage>(_ =>
+            {
+                Ready = false;
+            });
         }
 
         /// <summary>
         /// Is the peer ready?
         /// </summary>
-        public abstract bool Ready { get; }
+        public bool Ready { get; private set; } = true;
 
         /// <summary>
         /// Waits until this peer is ready to work.
@@ -63,17 +70,6 @@ namespace Battleships.Framework.Networking
         protected abstract int ReceiveBytes(Memory<byte> memory);
 
         /// <summary>
-        /// Register a network message.
-        /// </summary>
-        /// <typeparam name="TMessage">The type of the message.</typeparam>
-        public void RegisterMessage<TMessage>()
-            where TMessage : INetworkMessage
-        {
-            _messageTypeMap.Add(typeof(TMessage).GetHashCode(), typeof(TMessage));
-            Console.WriteLine($"Registered {typeof(TMessage).FullName}=>{typeof(TMessage).GetHashCode()}");
-        }
-
-        /// <summary>
         /// Send a network message.
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
@@ -89,7 +85,7 @@ namespace Battleships.Framework.Networking
             }
 
             var id = typeof(TMessage).GetHashCode();
-            if (!_messageTypeMap.ContainsKey(id))
+            if (!MessageRegistry.HasMessageTypeId(id))
                 return;
 
             var packet = new NetworkPacket(message, mode);
@@ -111,7 +107,15 @@ namespace Battleships.Framework.Networking
                 if (read == 0)
                     break;
 
-                var packet = new NetworkPacket(new NetworkReader(_buffer.Span));
+                var reader = new NetworkReader(_buffer.Span);
+                var packet = new NetworkPacket(ref reader, MessageRegistry);
+
+                // If we have a message, try to handle it.
+                if (packet.Message != null &&
+                    MessageRegistry.TryGetMessageHandler(packet.MessageType, out var handler))
+                {
+                    handler!(packet.Message);
+                }
             }
         }
     }

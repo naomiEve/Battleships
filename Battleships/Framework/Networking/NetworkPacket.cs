@@ -37,12 +37,18 @@ namespace Battleships.Framework.Networking
         /// Constructs and reads a network packet from the reader.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        public NetworkPacket(NetworkReader reader)
+        public NetworkPacket(ref NetworkReader reader, MessageRegistry registry)
         {
             Mode = reader.Read<SendMode>();
             MessageType = reader.Read<int>();
 
-            Console.WriteLine($"Got a message of type {MessageType} with mode {Mode}.");
+            // Try to construct the inner message if we know of it.
+            if (registry.TryGetMessageConstructor(MessageType, out var constructor))
+                Message = constructor!();
+
+            Message?.Deserialize(ref reader);
+
+            Console.WriteLine($"Got a message of type {MessageType} with mode {Mode}. Inner message exists? {Message != null}");
         }
 
         /// <summary>

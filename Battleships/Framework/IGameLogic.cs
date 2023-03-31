@@ -14,7 +14,8 @@
         /// Called when updating all of the logic.
         /// </summary>
         /// <param name="dt">The delta time.</param>
-        void Update(float dt);
+        /// <returns>Whether we should close after this frame.</returns>
+        bool Update(float dt);
 
         /// <summary>
         /// Called when the game window gets drawn.

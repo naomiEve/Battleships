@@ -5,6 +5,8 @@ namespace Battleships.Messages
 {
     internal struct TestMessage : INetworkMessage
     {
+        public int value;
+
         public void Serialize(ref NetworkWriter writer)
         {
             writer.Write(12345);
@@ -12,6 +14,7 @@ namespace Battleships.Messages
 
         public void Deserialize(ref NetworkReader reader)
         {
+            value = reader.Read<int>();
         }
     }
 }
