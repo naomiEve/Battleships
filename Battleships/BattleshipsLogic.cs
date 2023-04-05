@@ -13,7 +13,10 @@ namespace Battleships
     /// </summary>
     internal class BattleshipsLogic : IGameLogic
     {
-        private NetworkPeer _peer;
+        /// <summary>
+        /// The network peer.
+        /// </summary>
+        private readonly NetworkPeer _peer;
 
         /// <summary>
         /// Construct a new battleship logic with the given launch options.
@@ -34,7 +37,7 @@ namespace Battleships
         /// <param name="opts">The options.</param>
         /// <returns>The constructed network peer.</returns>
         /// <exception cref="ArgumentException">Thrown whenever the mode is not one of [server, client].</exception>
-        private NetworkPeer ConstructNetworkPeerFromOptions(LaunchOptions opts)
+        private static NetworkPeer ConstructNetworkPeerFromOptions(LaunchOptions opts)
         {
             return opts.Mode switch
             {

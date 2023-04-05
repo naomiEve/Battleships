@@ -1,4 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Battleships.Framework.Networking.Serialization
 {
@@ -43,6 +45,18 @@ namespace Battleships.Framework.Networking.Serialization
                 Unsafe.Write(bufferPtr + _position, data);
             
             _position += sizeof(TUnmanaged);
+        }
+
+        /// <summary>
+        /// Writes a string into the buffer. Allocates, so be wary.
+        /// </summary>
+        /// <param name="str"></param>
+        public void WriteString(string str)
+        {
+            Write(str.Length);
+
+            var data = Encoding.UTF8.GetBytes(str);
+            WriteBytes(data);
         }
 
         /// <summary>

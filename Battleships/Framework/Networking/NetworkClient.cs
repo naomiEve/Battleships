@@ -33,7 +33,7 @@ namespace Battleships.Framework.Networking
         /// <inheritdoc/>
         public override void WaitUntilReady()
         {
-            Console.WriteLine("Waiting for connection...");
+            Console.WriteLine($"Connecting to {_serverAddress}:{_serverPort}...");
             _client.Connect(_serverAddress, _serverPort);
 
             _stream = _client.GetStream();

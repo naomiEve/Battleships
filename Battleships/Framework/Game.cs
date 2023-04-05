@@ -8,7 +8,10 @@ namespace Battleships.Framework
     /// </summary>
     internal class Game
     {
-        private IGameLogic _logic;
+        /// <summary>
+        /// The logic we're running.
+        /// </summary>
+        private readonly IGameLogic _logic;
 
         /// <summary>
         /// Construct a new game window.

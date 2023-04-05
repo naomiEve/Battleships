@@ -15,5 +15,8 @@ namespace Battleships.Framework.Data
 
         [Option('p', "port", HelpText = "The port of the other peer.", Default = 666)]
         public int Port { get; set; }
+
+        [Option('l', "listen", HelpText = "Listens for existing games to allow you to connect to one.", Default = false)]
+        public bool ListenForGames { get; set; } = false;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Battleships.Framework.Networking.ServiceDiscovery;
 
 namespace Battleships.Framework.Networking
 {
@@ -12,6 +14,10 @@ namespace Battleships.Framework.Networking
         private readonly TcpListener _server;
         private TcpClient? _client;
 
+        private int _port;
+
+        private NetworkStream? _stream;
+
         /// <summary>
         /// Construct a network server.
         /// </summary>
@@ -20,6 +26,7 @@ namespace Battleships.Framework.Networking
             : base()
         {
             _server = new TcpListener(IPAddress.Any, port);
+            _port = port;
             IsCurrentLockstepPeer = true;
         }
 
@@ -42,25 +49,32 @@ namespace Battleships.Framework.Networking
             SetupServer();
             Console.WriteLine("Waiting for a client...");
 
+            // Broadcast this service.
+            var discovery = new ServiceDiscoveryServer();
+            discovery.BroadcastService(_port);
+
             _client = _server.AcceptTcpClient();
+            _stream = _client.GetStream();
+
+            // If someone has connected, we can safely get rid of the service discovery.
+            discovery.StopBroadcastingService();
+
             Console.WriteLine("Done!");
         }
 
         /// <inheritdoc/>
         protected override void SendBytes(ReadOnlySpan<byte> bytes)
         {
-            var stream = _client!.GetStream();
-            stream.Write(bytes);
+            _stream!.Write(bytes);
         }
 
         /// <inheritdoc/>
         protected override int ReceiveBytes(Memory<byte> memory)
         {
-            var stream = _client!.GetStream();
-            if (!stream.DataAvailable)
+            if (!_stream!.DataAvailable)
                 return 0;
 
-            return stream.Read(memory.Span);
+            return _stream!.Read(memory.Span);
         }
     }
 }
