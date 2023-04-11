@@ -20,7 +20,7 @@ Parser.Default.ParseArguments<LaunchOptions>(args)
                 Console.WriteLine(opts);
             }
 
-            var game = new Game(new Vector2Int(640, 480), $"Battleships ({opts.Mode})", new BattleshipsLogic(opts));
+            var game = new BattleshipsGame(opts);
             game.SetFramerateLimit(60);
             game.Run();
         }

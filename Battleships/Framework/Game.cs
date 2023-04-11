@@ -6,23 +6,39 @@ namespace Battleships.Framework
     /// <summary>
     /// The game.
     /// </summary>
-    internal class Game
+    internal abstract class Game
     {
         /// <summary>
-        /// The logic we're running.
+        /// The launch options of this game.
         /// </summary>
-        private readonly IGameLogic _logic;
+        protected LaunchOptions _launchOptions;
+
+        /// <summary>
+        /// The dimensions of the game window.
+        /// </summary>
+        public Vector2Int Dimensions { get; private set; }
+
+        /// <summary>
+        /// The title of the game window.
+        /// </summary>
+        public string Title { get; private set; }
+
+        /// <summary>
+        /// Should the game window close after the next update cycle finishes?
+        /// </summary>
+        public bool ShouldClose { get; protected set; }
 
         /// <summary>
         /// Construct a new game window.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
         /// <param name="name">The name of the window.</param>
-        public Game(Vector2Int dimensions, string name, IGameLogic logic)
+        /// <param name="opts">The launch options.</param>
+        public Game(Vector2Int dimensions, string name, LaunchOptions opts)
         {
-            _logic = logic;
-
-            Raylib.InitWindow(dimensions.X, dimensions.Y, name);
+            Dimensions = dimensions;
+            Title = name;
+            _launchOptions = opts;
         }
 
         /// <summary>
@@ -39,20 +55,43 @@ namespace Battleships.Framework
         /// </summary>
         public void Run()
         {
-            _logic.Preinitialize();
+            Preinitialize();
 
+            Raylib.InitWindow(Dimensions.X, Dimensions.Y, Title);
             while (!Raylib.WindowShouldClose())
             {
-                if (_logic.Update(Raylib.GetFrameTime()))
+                Update(Raylib.GetFrameTime());
+                if (ShouldClose)
                     break;
 
                 Raylib.BeginDrawing();
-                _logic.Draw();
+                Draw();
                 Raylib.EndDrawing();
             }
 
-            _logic.Destroy();
+            Destroy();
             Raylib.CloseWindow();
         }
+
+        /// <summary>
+        /// Ran before we initialize anything.
+        /// </summary>
+        protected virtual void Preinitialize() { }
+
+        /// <summary>
+        /// Runs a single update tick.
+        /// </summary>
+        /// <param name="dt">The time since the last frame.</param>
+        protected abstract void Update(float dt);
+
+        /// <summary>
+        /// Draws the game.
+        /// </summary>
+        protected abstract void Draw();
+
+        /// <summary>
+        /// Destroys all assets related to the game.
+        /// </summary>
+        protected virtual void Destroy() { }
     }
 }
