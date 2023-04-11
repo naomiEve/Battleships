@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Battleships.Framework;
 using Battleships.Framework.Data;
+using Battleships.Framework.Rendering;
 using Battleships.Messages;
 using Raylib_cs;
 
@@ -14,7 +15,7 @@ namespace Battleships
         /// <summary>
         /// The camera.
         /// </summary>
-        private Camera _camera;
+        private Camera? _camera;
 
         /// <summary>
         /// Construct a new battleship logic with the given launch options.
@@ -23,8 +24,7 @@ namespace Battleships
         public BattleshipsGame(LaunchOptions opts)
             : base(new Vector2Int(800, 600), "Battleships", opts)
         {
-            _camera = new Camera();
-            _camera.RotateY(45f);
+            
         }
 
         /// <inheritdoc/>
@@ -38,15 +38,22 @@ namespace Battleships
         }
 
         /// <inheritdoc/>
+        protected override void Start()
+        {
+            _camera = new Camera();
+            _camera.AddShaderPass<PosterizationShaderPass>();
+            _camera.AddShaderPass<PixelizationShaderPass>();
+            _camera.RotateY(45f);
+
+            Renderer = _camera;
+        }
+
+        /// <inheritdoc/>
         protected override void Draw()
         {
-            Raylib.ClearBackground(Color.WHITE);
-
-            _camera.Begin();
-            
             Raylib.DrawGrid(10, 1.0f);
 
-            var ray = _camera.MouseRay(Raylib.GetMousePosition());
+            var ray = _camera!.MouseRay(Raylib.GetMousePosition());
             var hit = Raylib.GetRayCollisionQuad(ray, new Vector3(-5f, 0f, -5f), new Vector3(-5f, 0f, 5f), new Vector3(5f, 0f, 5f), new Vector3(5f, 0f, -5f));
             if (hit.hit)
             {
@@ -56,11 +63,9 @@ namespace Battleships
                 point.Z = MathF.Floor(point.Z);
 
                 Raylib.DrawCube(new Vector3(point.X + 0.5f, 0.5f, point.Z + 0.5f), 1f, 1f, 1f, Color.RED);
-                _camera.End();
             }
             else
             {
-                _camera.End();
                 Raylib.DrawText("Bleh", 0, 0, 30, Color.BLACK);
             }
         }
@@ -72,9 +77,6 @@ namespace Battleships
 
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
                 Peer.Send(new TestMessage());
-
-            if (!Peer.IsCurrentLockstepPeer)
-                Raylib.DrawText("WAITING...", 0, 0, 40, Color.BLACK);
         }
     }
 }

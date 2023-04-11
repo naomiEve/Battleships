@@ -1,4 +1,5 @@
 ﻿using Battleships.Framework.Data;
+using Battleships.Framework.Rendering;
 using Raylib_cs;
 
 namespace Battleships.Framework
@@ -29,6 +30,11 @@ namespace Battleships.Framework
         public bool ShouldClose { get; protected set; }
 
         /// <summary>
+        /// The game renderer.
+        /// </summary>
+        public IGameRenderer? Renderer { get; protected set; }
+
+        /// <summary>
         /// Construct a new game window.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
@@ -56,17 +62,18 @@ namespace Battleships.Framework
         public void Run()
         {
             Preinitialize();
-
             Raylib.InitWindow(Dimensions.X, Dimensions.Y, Title);
+            Start();
+
             while (!Raylib.WindowShouldClose())
             {
                 Update(Raylib.GetFrameTime());
                 if (ShouldClose)
                     break;
 
-                Raylib.BeginDrawing();
+                Renderer!.Begin();
                 Draw();
-                Raylib.EndDrawing();
+                Renderer!.End();
             }
 
             Destroy();
@@ -77,6 +84,11 @@ namespace Battleships.Framework
         /// Ran before we initialize anything.
         /// </summary>
         protected virtual void Preinitialize() { }
+
+        /// <summary>
+        /// Called right after the Raylib window has been initialized.
+        /// </summary>
+        protected virtual void Start() { }
 
         /// <summary>
         /// Runs a single update tick.
