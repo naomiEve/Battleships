@@ -1,4 +1,6 @@
-﻿using Battleships.Framework.Data;
+﻿using System.ComponentModel.DataAnnotations;
+using Battleships.Framework.Data;
+using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Raylib_cs;
 
@@ -35,6 +37,11 @@ namespace Battleships.Framework
         public IGameRenderer? Renderer { get; protected set; }
 
         /// <summary>
+        /// A list of all the game objects.
+        /// </summary>
+        private List<GameObject> _gameObjects;
+
+        /// <summary>
         /// Construct a new game window.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
@@ -45,6 +52,8 @@ namespace Battleships.Framework
             Dimensions = dimensions;
             Title = name;
             _launchOptions = opts;
+
+            _gameObjects = new List<GameObject>();
         }
 
         /// <summary>
@@ -81,6 +90,23 @@ namespace Battleships.Framework
         }
 
         /// <summary>
+        /// Adds a new game object.
+        /// </summary>
+        /// <typeparam name="TGameObject">The game object type.</typeparam>
+        /// <returns>The newly created game object.</returns>
+        protected TGameObject AddGameObject<TGameObject>()
+            where TGameObject : GameObject, new()
+        {
+            var obj = new TGameObject();
+            obj.SetGame(this);
+            obj.Start();
+
+            _gameObjects.Add(obj);
+
+            return obj;
+        }
+
+        /// <summary>
         /// Ran before we initialize anything.
         /// </summary>
         protected virtual void Preinitialize() { }
@@ -94,16 +120,31 @@ namespace Battleships.Framework
         /// Runs a single update tick.
         /// </summary>
         /// <param name="dt">The time since the last frame.</param>
-        protected abstract void Update(float dt);
+        protected virtual void Update(float dt)
+        {
+            foreach (var go in _gameObjects)
+                go.Update(dt);
+        }
 
         /// <summary>
         /// Draws the game.
         /// </summary>
-        protected abstract void Draw();
+        protected virtual void Draw()
+        {
+            foreach (var go in _gameObjects)
+            {
+                if (go is IDrawableGameObject dgo)
+                    dgo.Draw();
+            }
+        }
 
         /// <summary>
         /// Destroys all assets related to the game.
         /// </summary>
-        protected virtual void Destroy() { }
+        protected virtual void Destroy()
+        {
+            foreach (var go in _gameObjects)
+                go.Destroy();   
+        }
     }
 }

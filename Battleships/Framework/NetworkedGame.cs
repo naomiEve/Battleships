@@ -59,6 +59,8 @@ namespace Battleships.Framework
 
             if (!Peer.Ready)
                 ShouldClose = true;
+
+            base.Update(dt);
         }
 
         /// <inheritdoc/>

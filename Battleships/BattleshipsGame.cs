@@ -18,6 +18,11 @@ namespace Battleships
         private Camera? _camera;
 
         /// <summary>
+        /// The cube renderer.
+        /// </summary>
+        private CubeRenderer? _cube;
+
+        /// <summary>
         /// Construct a new battleship logic with the given launch options.
         /// </summary>
         /// <param name="opts">The launch options.</param>
@@ -46,28 +51,9 @@ namespace Battleships
             _camera.Rotate(new Vector3(45, 0, 0));
 
             Renderer = _camera;
-        }
 
-        /// <inheritdoc/>
-        protected override void Draw()
-        {
-            Raylib.DrawGrid(10, 1.0f);
-
-            var ray = _camera!.MouseRay(Raylib.GetMousePosition());
-            var hit = Raylib.GetRayCollisionQuad(ray, new Vector3(-5f, 0f, -5f), new Vector3(-5f, 0f, 5f), new Vector3(5f, 0f, 5f), new Vector3(5f, 0f, -5f));
-            if (hit.hit)
-            {
-                // Translate this hit to the square
-                var point = hit.point;
-                point.X = MathF.Floor(point.X);
-                point.Z = MathF.Floor(point.Z);
-
-                Raylib.DrawCube(new Vector3(point.X + 0.5f, 0.5f, point.Z + 0.5f), 1f, 1f, 1f, Color.RED);
-            }
-            else
-            {
-                Raylib.DrawText("Bleh", 0, 0, 30, Color.BLACK);
-            }
+            _cube = AddGameObject<CubeRenderer>();
+            AddGameObject<GridRenderer>();
         }
 
         /// <inheritdoc/>
@@ -87,6 +73,18 @@ namespace Battleships
             {
                 var newPos = new Vector3(positionWithinScreen.X, 0f, positionWithinScreen.Y) * 8f * dt;
                 _camera!.Move(newPos);
+            }
+
+            var ray = _camera!.MouseRay(Raylib.GetMousePosition());
+            var hit = Raylib.GetRayCollisionQuad(ray, new Vector3(-5f, 0f, -5f), new Vector3(-5f, 0f, 5f), new Vector3(5f, 0f, 5f), new Vector3(5f, 0f, -5f));
+            if (hit.hit)
+            {
+                // Translate this hit to the square
+                var point = hit.point;
+                point.X = MathF.Floor(point.X);
+                point.Z = MathF.Floor(point.Z);
+
+                _cube!.Position = new Vector3(point.X + 0.5f, 0.5f, point.Z + 0.5f);
             }
         }
     }
