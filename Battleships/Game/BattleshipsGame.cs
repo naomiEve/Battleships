@@ -43,6 +43,9 @@ namespace Battleships.Game
         protected override void Start()
         {
             AssetDatabase.Load<SoundAsset>("explosion", "./assets/explosion.wav");
+            AssetDatabase.Load<ModelAsset>("ship_head", "./assets/ship_head.obj");
+            AssetDatabase.Load<ModelAsset>("ship_body", "./assets/ship_body.obj");
+            AssetDatabase.Load<ModelAsset>("ship_tail", "./assets/ship_tail.obj");
 
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))

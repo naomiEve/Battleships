@@ -30,7 +30,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The type of this ship part.
         /// </summary>
-        public PartType Type { get; set; }
+        public PartType Type { get; private set; }
 
         /// <summary>
         /// The parent ship.
@@ -41,6 +41,35 @@ namespace Battleships.Game.Objects
         /// Is this part sunk?
         /// </summary>
         public bool Sunk { get; set; } = false;
+
+        /// <summary>
+        /// The model this ship has.
+        /// </summary>
+        private ModelAsset? _model;
+
+        /// <summary>
+        /// Set this part's type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        public void SetType(PartType type)
+        {
+            Type = type;
+
+            switch (type)
+            {
+                case PartType.Head:
+                    _model = ThisGame?.AssetDatabase.Get<ModelAsset>("ship_head");
+                    break;
+
+                case PartType.Body:
+                    _model = ThisGame?.AssetDatabase.Get<ModelAsset>("ship_body");
+                    break;
+
+                case PartType.Tail:
+                    _model = ThisGame?.AssetDatabase.Get<ModelAsset>("ship_tail");
+                    break;
+            }
+        }
 
         /// <summary>
         /// Sink this piece.
@@ -68,7 +97,16 @@ namespace Battleships.Game.Objects
             if (Sunk)
                 return;
 
-            Raylib.DrawCube(Position, 1f, 1f, 1f, Color.RED);
+            if (_model == null)
+            {
+                Raylib.DrawCube(Position, 1f, 1f, 1f, Color.RED);
+                return;
+            }
+
+            if (Ship!.ShipFacing == Ship.Facing.Right)
+                Raylib.DrawModelEx(_model.Model, Position, Vector3.UnitY, 90f, new Vector3(0.5f), Color.RED);
+            else
+                Raylib.DrawModel(_model.Model, Position, 0.5f, Color.YELLOW);
         }
     }
 }

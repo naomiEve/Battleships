@@ -52,16 +52,24 @@ namespace Battleships.Game.Objects
         {
             for (var i = 0; i < Length; i++)
             {
+                var part = default(ShipPart?);
                 switch (ShipFacing)
                 {
                     case Facing.Down:
-                        _parts.Add(_playfield!.CreateShipPart(Position.X, Position.Y + i, this));
+                        part = _playfield!.CreateShipPart(Position.X, Position.Y + i, this);
                         break;
 
                     case Facing.Right:
-                        _parts.Add(_playfield!.CreateShipPart(Position.X + i, Position.Y, this));
+                        part = _playfield!.CreateShipPart(Position.X + i, Position.Y, this);
                         break;
                 }
+
+                if (i == 0)
+                    part?.SetType(ShipPart.PartType.Head);
+                else if (i == Length - 1)
+                    part?.SetType(ShipPart.PartType.Tail);
+                else
+                    part?.SetType(ShipPart.PartType.Body);
             }
         }
     }
