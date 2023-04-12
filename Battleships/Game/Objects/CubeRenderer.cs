@@ -2,7 +2,7 @@
 using Battleships.Framework.Objects;
 using Raylib_cs;
 
-namespace Battleships
+namespace Battleships.Game.Objects
 {
     /// <summary>
     /// A cube renderer.

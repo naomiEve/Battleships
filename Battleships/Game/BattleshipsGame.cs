@@ -2,10 +2,12 @@
 using Battleships.Framework;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
-using Battleships.Messages;
+using Battleships.Game.Messages;
+using Battleships.Game.Objects;
+using Battleships.Game.Shaders;
 using Raylib_cs;
 
-namespace Battleships
+namespace Battleships.Game
 {
     /// <summary>
     /// The game logic for battleships.
@@ -29,7 +31,7 @@ namespace Battleships
         public BattleshipsGame(LaunchOptions opts)
             : base(new Vector2Int(800, 600), "Battleships", opts)
         {
-            
+
         }
 
         /// <inheritdoc/>

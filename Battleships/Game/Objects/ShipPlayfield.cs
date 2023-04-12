@@ -1,16 +1,16 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
-using Battleships.Messages;
+using Battleships.Game.Messages;
 using Raylib_cs;
 
-namespace Battleships
+namespace Battleships.Game.Objects
 {
     /// <summary>
     /// A playfield for battleships.
     /// </summary>
-    internal class ShipPlayfield : GameObject, 
-        IDrawableGameObject, 
+    internal class ShipPlayfield : GameObject,
+        IDrawableGameObject,
         IRaycastTargettableObject
     {
         /// <summary>
@@ -42,7 +42,7 @@ namespace Battleships
                 return;
 
             var cube = ThisGame!.AddGameObject<CubeRenderer>();
-            cube.Position = new Vector3((x - 5) + 0.5f, 0.5f, (y - 5) + 0.5f);
+            cube.Position = new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f);
 
             _field[x, y] = cube;
         }
@@ -84,7 +84,7 @@ namespace Battleships
                     return;
 
                 CreateCube(x, y);
-                
+
                 Peer!.Send(new CreateCubeMessage
                 {
                     x = x,

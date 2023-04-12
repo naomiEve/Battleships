@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Battleships.Framework.Shaders;
 
-namespace Battleships
+namespace Battleships.Game.Shaders
 {
     /// <summary>
     /// A posterization shader pass.

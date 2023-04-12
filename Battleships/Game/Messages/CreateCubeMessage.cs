@@ -1,7 +1,7 @@
 ﻿using Battleships.Framework.Networking;
 using Battleships.Framework.Networking.Serialization;
 
-namespace Battleships.Messages
+namespace Battleships.Game.Messages
 {
     /// <summary>
     /// Create a cube at the playfield.

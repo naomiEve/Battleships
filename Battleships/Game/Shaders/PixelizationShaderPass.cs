@@ -1,6 +1,6 @@
 ﻿using Battleships.Framework.Shaders;
 
-namespace Battleships
+namespace Battleships.Game.Shaders
 {
     /// <summary>
     /// A pixelization shader.

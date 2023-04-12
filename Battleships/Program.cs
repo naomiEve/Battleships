@@ -1,4 +1,4 @@
-﻿using Battleships;
+﻿using Battleships.Game;
 using Battleships.Framework.Data;
 using Battleships.Framework.Networking.ServiceDiscovery;
 using CommandLine;

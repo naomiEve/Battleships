@@ -1,6 +1,6 @@
 ﻿using Battleships.Framework.Objects;
 
-namespace Battleships
+namespace Battleships.Game.Objects
 {
     /// <summary>
     /// The battleships coordinator.
