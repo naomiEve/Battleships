@@ -2,7 +2,6 @@
 using Battleships.Framework;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
-using Battleships.Game.Messages;
 using Battleships.Game.Objects;
 using Battleships.Game.Shaders;
 using Raylib_cs;
@@ -37,11 +36,7 @@ namespace Battleships.Game
         /// <inheritdoc/>
         protected override void RegisterMessages()
         {
-            Peer.MessageRegistry.RegisterMessage<TestMessage>(mesg =>
-            {
-                var testMseg = (TestMessage)mesg;
-                Console.WriteLine($"Received a new test message! value={testMseg.value}");
-            });
+            
         }
 
         /// <inheritdoc/>
@@ -57,16 +52,13 @@ namespace Battleships.Game
             CurrentRenderer = _camera;
 
             _gameCoordinator = AddGameObject<GameCoordinator>();
-            AddGameObject<ShipPlayfield>();
+            _gameCoordinator.SetPlayfieldForPlayer(0, AddGameObject<ShipPlayfield>());
         }
 
         /// <inheritdoc/>
         protected override void Update(float dt)
         {
             base.Update(dt);
-
-            if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
-                Peer.Send(new TestMessage());
 
             var dim = new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
             var positionWithinScreen = (Raylib.GetMousePosition() - dim / 2f) / dim;

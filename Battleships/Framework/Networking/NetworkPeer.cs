@@ -29,6 +29,11 @@ namespace Battleships.Framework.Networking
         public bool IsCurrentLockstepPeer { get; protected set; } = false;
 
         /// <summary>
+        /// This peer's id.
+        /// </summary>
+        public int PeerId { get; protected set; } = 0;
+
+        /// <summary>
         /// Constructs a new network peer.
         /// </summary>
         public NetworkPeer()
@@ -38,8 +43,13 @@ namespace Battleships.Framework.Networking
 
             MessageRegistry.RegisterMessage<LockstepPassingMessage>(message =>
             {
-                Console.WriteLine("Received a new lockstep passing message!");
                 IsCurrentLockstepPeer = true;
+            });
+
+            MessageRegistry.RegisterMessage<SetClientIdMessage>(message =>
+            {
+                var idMesg = (SetClientIdMessage)message;
+                PeerId = idMesg.id;
             });
 
             MessageRegistry.RegisterMessage<DisconnectMessage>(_ =>

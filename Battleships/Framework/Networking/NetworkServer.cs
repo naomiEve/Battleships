@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Battleships.Framework.Networking.Messages;
 using Battleships.Framework.Networking.ServiceDiscovery;
 
 namespace Battleships.Framework.Networking
@@ -11,11 +11,24 @@ namespace Battleships.Framework.Networking
     /// </summary>
     internal class NetworkServer : NetworkPeer
     {
+        /// <summary>
+        /// The TCP server.
+        /// </summary>
         private readonly TcpListener _server;
+
+        /// <summary>
+        /// The client that connected to us.
+        /// </summary>
         private TcpClient? _client;
 
-        private int _port;
+        /// <summary>
+        /// The port we're listening on.
+        /// </summary>
+        private readonly int _port;
 
+        /// <summary>
+        /// The network stream we're sending on.
+        /// </summary>
         private NetworkStream? _stream;
 
         /// <summary>
@@ -58,6 +71,12 @@ namespace Battleships.Framework.Networking
 
             // If someone has connected, we can safely get rid of the service discovery.
             discovery.StopBroadcastingService();
+
+            // Set their client id.
+            Send(new SetClientIdMessage
+            {
+                id = PeerId + 1
+            }, SendMode.Extra);
 
             Console.WriteLine("Done!");
         }

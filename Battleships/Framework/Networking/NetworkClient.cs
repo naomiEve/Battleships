@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 
 namespace Battleships.Framework.Networking
@@ -10,10 +8,24 @@ namespace Battleships.Framework.Networking
     /// </summary>
     internal class NetworkClient : NetworkPeer
     {
+        /// <summary>
+        /// The TCP client.
+        /// </summary>
         private readonly TcpClient _client;
+
+        /// <summary>
+        /// The address of the server.
+        /// </summary>
         private readonly IPAddress _serverAddress;
+
+        /// <summary>
+        /// The port of the server.
+        /// </summary>
         private readonly int _serverPort;
 
+        /// <summary>
+        /// The network stream towards the server.
+        /// </summary>
         private NetworkStream? _stream;
 
         /// <summary>
