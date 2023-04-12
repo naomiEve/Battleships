@@ -118,6 +118,27 @@ namespace Battleships.Framework
         }
 
         /// <summary>
+        /// Cast a ray within the scene.
+        /// </summary>
+        /// <param name="ray">The ray.</param>
+        /// <returns>A ray collision, or nothing.</returns>
+        public RayCollision? CastRay(Ray ray)
+        {
+            // Try to collide with all of the gameobjects that are raycast targets.
+            foreach (var obj in _gameObjects)
+            {
+                if (obj is not IRaycastTargettableObject rto)
+                    continue;
+
+                var collision = rto.Collide(ray);
+                if (collision.hit)
+                    return collision;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Ran before we initialize anything.
         /// </summary>
         protected virtual void Preinitialize() { }
@@ -133,8 +154,8 @@ namespace Battleships.Framework
         /// <param name="dt">The time since the last frame.</param>
         protected virtual void Update(float dt)
         {
-            foreach (var go in _gameObjects)
-                go.Update(dt);
+            for (var i = 0; i < _gameObjects.Count; i++)
+                _gameObjects[i].Update(dt);
         }
 
         /// <summary>

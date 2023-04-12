@@ -18,11 +18,6 @@ namespace Battleships
         private Camera? _camera;
 
         /// <summary>
-        /// The cube renderer.
-        /// </summary>
-        private CubeRenderer? _cube;
-
-        /// <summary>
         /// The game coordinator.
         /// </summary>
         private GameCoordinator? _gameCoordinator;
@@ -54,12 +49,11 @@ namespace Battleships
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
                 .WithProjectionType(CameraProjection.CAMERA_ORTHOGRAPHIC)
-                .WithShaderPass<PosterizationShaderPass>();
+                .WithShaderPass<PixelizationShaderPass>();
 
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
-            _cube = AddGameObject<CubeRenderer>();
             _gameCoordinator = AddGameObject<GameCoordinator>();
             AddGameObject<ShipPlayfield>();
         }
@@ -81,18 +75,6 @@ namespace Battleships
             {
                 var newPos = new Vector3(positionWithinScreen.X, 0f, positionWithinScreen.Y) * 8f * dt;
                 _camera!.Move(newPos);
-            }
-
-            var ray = _camera!.MouseRay(Raylib.GetMousePosition());
-            var hit = Raylib.GetRayCollisionQuad(ray, new Vector3(-5f, 0f, -5f), new Vector3(-5f, 0f, 5f), new Vector3(5f, 0f, 5f), new Vector3(5f, 0f, -5f));
-            if (hit.hit)
-            {
-                // Translate this hit to the square
-                var point = hit.point;
-                point.X = MathF.Floor(point.X);
-                point.Z = MathF.Floor(point.Z);
-
-                _cube!.Position = new Vector3(point.X + 0.5f, 0.5f, point.Z + 0.5f);
             }
         }
     }
