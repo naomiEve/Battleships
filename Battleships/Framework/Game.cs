@@ -70,7 +70,10 @@ namespace Battleships.Framework
         public void Run()
         {
             Preinitialize();
+
             Raylib.InitWindow(Dimensions.X, Dimensions.Y, Title);
+            Raylib.InitAudioDevice();
+
             Start();
 
             while (!Raylib.WindowShouldClose())
