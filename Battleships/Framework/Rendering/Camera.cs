@@ -25,17 +25,44 @@ namespace Battleships.Framework.Rendering
         private RenderTexture2D? _backingTexture;
 
         /// <summary>
+        /// Forward vector.
+        /// </summary>
+        public Vector3 Forward => Raymath.Vector3Normalize(Raymath.Vector3Subtract(_camera.target, _camera.position));
+
+        /// <summary>
+        /// Up vector.
+        /// </summary>
+        public Vector3 Up => Raymath.Vector3Normalize(_camera.up);
+
+        /// <summary>
+        /// Right vector.
+        /// </summary>
+        public Vector3 Right => Raymath.Vector3CrossProduct(Forward, Up);
+
+        /// <summary>
+        /// The camera's position.
+        /// </summary>
+        public Vector3 Position => _camera.position;
+
+        /// <summary>
+        /// The current rotation vector.
+        /// </summary>
+        public Vector3 Rotation { get; private set; }
+
+        /// <summary>
         /// Construct a new camera.
         /// </summary>
-        public Camera()
+        public Camera(Vector3? position, float? fov)
         {
             _camera = new Camera3D(
-                new Vector3(0f, 10f, 10f),
+                position ?? Vector3.Zero,
                 Vector3.Zero,
-                new Vector3(0f, 1f, 0f),
-                10f,
+                Vector3.UnitY,
+                fov ?? 90f,
                 CameraProjection.CAMERA_ORTHOGRAPHIC
             );
+
+            Rotation = Vector3.Zero;
         }
 
         /// <summary>
@@ -52,32 +79,172 @@ namespace Battleships.Framework.Rendering
             _backingTexture ??= Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
         }
 
-        public Vector3 GetForward()
-        {
-            return Raymath.Vector3Normalize(Raymath.Vector3Subtract(_camera.target, _camera.position));
-        }
-
+        /// <summary>
+        /// Constructs a ray from the screen space mouse position facing the camera's forward.
+        /// </summary>
+        /// <param name="mousePosition">The screen space mouse position</param>
+        /// <returns>The constructed ray.</returns>
         public Ray MouseRay(Vector2 mousePosition)
         {
             return Raylib.GetMouseRay(mousePosition, _camera);
         }
 
-        public void RotateY(float angle)
+        /// <summary>
+        /// Moves the camera a set distance forward.
+        /// </summary>
+        /// <param name="distance">The distance.</param>
+        /// <param name="moveInWorldPlane">Should we move in the world plane?</param>
+        public void MoveForward(float distance, bool moveInWorldPlane)
         {
-            var mtx = Raymath.MatrixRotate(Raymath.Vector3Normalize(_camera.up), angle * (MathF.PI / 180f));
-            var view = Raymath.Vector3Subtract(_camera.position, _camera.target);
-            view = Raymath.Vector3Transform(view, mtx);
-            _camera.position = Raymath.Vector3Add(_camera.target, view);
+            var forward = Forward;
+
+            if (moveInWorldPlane)
+            {
+                forward.Y = 0;
+                forward = Raymath.Vector3Normalize(forward);
+            }
+
+            forward = Raymath.Vector3Scale(forward, distance);
+            _camera.position = Raymath.Vector3Add(_camera.position, forward);
+            _camera.target = Raymath.Vector3Add(_camera.target, forward);
         }
 
+        /// <summary>
+        /// Moves the camera up a certain distance.
+        /// </summary>
+        /// <param name="distance">The distance to move.</param>
+        public void MoveUp(float distance)
+        {
+            var up = Up;
+            up = Raymath.Vector3Scale(up, distance);
+            _camera.position = Raymath.Vector3Add(_camera.position, up);
+            _camera.target = Raymath.Vector3Add(_camera.target, up);
+        }
+
+        /// <summary>
+        /// Moves the camera right a certain distance.
+        /// </summary>
+        /// <param name="distance">The distance to move.</param>
+        /// <param name="moveInWorldPlane">Should we move in the world plane?</param>
+        public void MoveRight(float distance, bool moveInWorldPlane)
+        {
+            var right = Right;
+
+            if (moveInWorldPlane)
+            {
+                right.Y = 0;
+                right = Raymath.Vector3Normalize(right);
+            }
+
+            right = Raymath.Vector3Scale(right, distance);
+            _camera.position = Raymath.Vector3Add(_camera.position, right);
+            _camera.target = Raymath.Vector3Add(_camera.target, right);
+        }
+
+        /// <summary>
+        /// Moves the camera.
+        /// </summary>
+        /// <param name="delta">The delta movement vector.</param>
+        public void Move(Vector3 delta)
+        {
+            MoveForward(delta.Z, true);
+            MoveUp(delta.Y);
+            MoveRight(delta.X, true);
+        }
+
+        /// <summary>
+        /// Sets the camera's yaw.
+        /// </summary>
+        /// <param name="angle">The angle to rotate by.</param>
+        /// <param name="rotateAroundTarget">Should we rotate around the camera's target?</param>
+        public void RotateYaw(float angle, bool rotateAroundTarget)
+        {
+            var up = Up;
+            var targetPosition = Raymath.Vector3Subtract(_camera.target, _camera.position);
+            targetPosition = Raymath.Vector3RotateByAxisAngle(targetPosition, up, angle);
+
+            if (rotateAroundTarget)
+                _camera.position = Raymath.Vector3Subtract(_camera.target, targetPosition);
+            else
+                _camera.target = Raymath.Vector3Add(_camera.position, targetPosition);
+        }
+
+        /// <summary>
+        /// Gets the angle between two vector3s.
+        /// </summary>
+        /// <param name="v1">The first vector.</param>
+        /// <param name="v2">The second vector.</param>
+        /// <returns>The angle between them.</returns>
+        private float Vector3Angle(Vector3 v1, Vector3 v2)
+        {
+            return MathF.Acos(Raymath.Vector3DotProduct(v1, v2) / (Raymath.Vector3Length(v1) * Raymath.Vector3Length(v2)));
+        }
+
+        /// <summary>
+        /// Sets the camera's pitch.
+        /// </summary>
+        /// <param name="angle">The new angle.</param>
+        /// <param name="rotateAroundTarget">Should we rotate around the target?</param>
+        public void RotatePitch(float angle, bool lockView, bool rotateAroundTarget, bool rotateUp)
+        {
+            var up = Up;
+            var targetPosition = Raymath.Vector3Subtract(_camera.target, _camera.position);
+
+            if (lockView)
+            {
+                var maxAngleUp = Vector3Angle(up, targetPosition);
+                maxAngleUp -= 0.001f;
+                if (angle > maxAngleUp)
+                    angle = maxAngleUp;
+
+                var maxAngleDown = Vector3Angle(Raymath.Vector3Negate(up), targetPosition);
+                maxAngleDown *= -1.0f;
+                maxAngleDown += 0.001f;
+
+                if (angle < maxAngleDown)
+                    angle = maxAngleDown;
+            }
+
+            var right = Right;
+            targetPosition = Raymath.Vector3RotateByAxisAngle(targetPosition, right, angle);
+
+            if (rotateAroundTarget)
+                _camera.position = Raymath.Vector3Subtract(_camera.target, targetPosition);
+            else
+                _camera.target = Raymath.Vector3Add(_camera.position, targetPosition);
+
+            if (rotateUp)
+                _camera.up = Raymath.Vector3RotateByAxisAngle(_camera.up, right, angle);
+        }
+
+        /// <summary>
+        /// Sets the camera's roll.
+        /// </summary>
+        /// <param name="angle">The angle.</param>
+        public void RotateRoll(float angle)
+        {
+            var forward = Forward;
+            _camera.up = Raymath.Vector3RotateByAxisAngle(_camera.up, forward, angle);
+        }
+
+        /// <summary>
+        /// Rotates the camera by the given angular vector.
+        /// </summary>
+        /// <param name="angles">The vector.</param>
         public void Rotate(Vector3 angles)
         {
-            /*var mtx = Raymath.MatrixRotate(Raymath.Vector3Normalize(_camera.up), angle * (MathF.PI / 180f));
-            var view = Raymath.Vector3Subtract(_camera.position, _camera.target);
-            view = Raymath.Vector3Transform(view, mtx);
-            _camera.position = Raymath.Vector3Add(_camera.target, view);*/
+            const float DEG2RAD = MathF.PI / 180f;
+
+            RotatePitch(-angles.Y * DEG2RAD, true, true, false);
+            RotateYaw(-angles.X * DEG2RAD, true);
+            RotateRoll(-angles.Z * DEG2RAD);
+
+            Rotation = angles;
         }
 
+        /// <summary>
+        /// Draws what the camera sees onto the screen.
+        /// </summary>
         private void Blit()
         {
             // This only makes sense if we're using any backing textures.
@@ -98,6 +265,9 @@ namespace Battleships.Framework.Rendering
             Raylib.EndDrawing();
         }
 
+        /// <summary>
+        /// Begins drawing.
+        /// </summary>
         public void Begin()
         {
             if (_backingTexture != null)
@@ -109,6 +279,9 @@ namespace Battleships.Framework.Rendering
             Raylib.ClearBackground(Color.WHITE);
         }
 
+        /// <summary>
+        /// Ends drawing.
+        /// </summary>
         public void End()
         {
             Raylib.EndMode3D();

@@ -40,10 +40,10 @@ namespace Battleships
         /// <inheritdoc/>
         protected override void Start()
         {
-            _camera = new Camera();
-            _camera.AddShaderPass<PosterizationShaderPass>();
-            _camera.AddShaderPass<PixelizationShaderPass>();
-            _camera.RotateY(45f);
+            _camera = new Camera(new Vector3(0f, 10f, 10f), 10f);
+            //_camera.AddShaderPass<PosterizationShaderPass>();
+            //_camera.AddShaderPass<PixelizationShaderPass>();
+            _camera.Rotate(new Vector3(45, 0, 0));
 
             Renderer = _camera;
         }
@@ -77,6 +77,17 @@ namespace Battleships
 
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_A))
                 Peer.Send(new TestMessage());
+
+            var dim = new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+            var positionWithinScreen = (Raylib.GetMousePosition() - dim / 2f) / dim;
+            positionWithinScreen.Y = -positionWithinScreen.Y;
+
+            if (MathF.Abs(positionWithinScreen.Y) >= 0.4f ||
+                MathF.Abs(positionWithinScreen.X) >= 0.4f)
+            {
+                var newPos = new Vector3(positionWithinScreen.X, 0f, positionWithinScreen.Y) * 8f * dt;
+                _camera!.Move(newPos);
+            }
         }
     }
 }
