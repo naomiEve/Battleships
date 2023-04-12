@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Objects;
 using Battleships.Framework.Shaders;
 using Raylib_cs;
 
@@ -7,7 +8,7 @@ namespace Battleships.Framework.Rendering
     /// <summary>
     /// A camera.
     /// </summary>
-    internal class Camera : IGameRenderer
+    internal partial class Camera : GameObject, IGameRenderer
     {
         /// <summary>
         /// The camera we're using.
@@ -52,14 +53,14 @@ namespace Battleships.Framework.Rendering
         /// <summary>
         /// Construct a new camera.
         /// </summary>
-        public Camera(Vector3? position, float? fov)
+        public Camera()
         {
             _camera = new Camera3D(
-                position ?? Vector3.Zero,
+                Vector3.Zero,
                 Vector3.Zero,
                 Vector3.UnitY,
-                fov ?? 90f,
-                CameraProjection.CAMERA_ORTHOGRAPHIC
+                90f,
+                CameraProjection.CAMERA_PERSPECTIVE
             );
 
             Rotation = Vector3.Zero;

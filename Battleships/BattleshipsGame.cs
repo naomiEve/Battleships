@@ -23,6 +23,11 @@ namespace Battleships
         private CubeRenderer? _cube;
 
         /// <summary>
+        /// The game coordinator.
+        /// </summary>
+        private GameCoordinator? _gameCoordinator;
+
+        /// <summary>
         /// Construct a new battleship logic with the given launch options.
         /// </summary>
         /// <param name="opts">The launch options.</param>
@@ -45,15 +50,18 @@ namespace Battleships
         /// <inheritdoc/>
         protected override void Start()
         {
-            _camera = new Camera(new Vector3(0f, 10f, 10f), 10f);
-            //_camera.AddShaderPass<PosterizationShaderPass>();
-            //_camera.AddShaderPass<PixelizationShaderPass>();
-            _camera.Rotate(new Vector3(45, 0, 0));
+            _camera = AddGameObject<Camera>()
+                .WithPosition(new Vector3(0, 10f, 10f))
+                .WithFOV(10f)
+                .WithProjectionType(CameraProjection.CAMERA_ORTHOGRAPHIC)
+                .WithShaderPass<PosterizationShaderPass>();
 
-            Renderer = _camera;
+            _camera.Rotate(new Vector3(45, 0, 0));
+            CurrentRenderer = _camera;
 
             _cube = AddGameObject<CubeRenderer>();
-            AddGameObject<GridRenderer>();
+            _gameCoordinator = AddGameObject<GameCoordinator>();
+            AddGameObject<ShipPlayfield>();
         }
 
         /// <inheritdoc/>

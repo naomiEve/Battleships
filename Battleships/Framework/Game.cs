@@ -34,7 +34,7 @@ namespace Battleships.Framework
         /// <summary>
         /// The game renderer.
         /// </summary>
-        public IGameRenderer? Renderer { get; protected set; }
+        public IGameRenderer? CurrentRenderer { get; protected set; }
 
         /// <summary>
         /// A list of all the game objects.
@@ -80,9 +80,9 @@ namespace Battleships.Framework
                 if (ShouldClose)
                     break;
 
-                Renderer!.Begin();
+                CurrentRenderer!.Begin();
                 Draw();
-                Renderer!.End();
+                CurrentRenderer!.End();
             }
 
             Destroy();
@@ -94,7 +94,7 @@ namespace Battleships.Framework
         /// </summary>
         /// <typeparam name="TGameObject">The game object type.</typeparam>
         /// <returns>The newly created game object.</returns>
-        protected TGameObject AddGameObject<TGameObject>()
+        public TGameObject AddGameObject<TGameObject>()
             where TGameObject : GameObject, new()
         {
             var obj = new TGameObject();
@@ -104,6 +104,17 @@ namespace Battleships.Framework
             _gameObjects.Add(obj);
 
             return obj;
+        }
+
+        /// <summary>
+        /// Get a game object by its type.
+        /// </summary>
+        /// <typeparam name="TGameObject">The game object.</typeparam>
+        /// <returns>The game object, or nothing.</returns>
+        public TGameObject? GetGameObjectOfType<TGameObject>()
+            where TGameObject : GameObject
+        {
+            return _gameObjects.FirstOrDefault(obj => obj is TGameObject) as TGameObject;
         }
 
         /// <summary>

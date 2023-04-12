@@ -1,4 +1,6 @@
-﻿namespace Battleships.Framework.Objects
+﻿using Battleships.Framework.Networking;
+
+namespace Battleships.Framework.Objects
 {
     /// <summary>
     /// An object within the game.
@@ -11,12 +13,28 @@
         protected Game? ThisGame { get; private set; }
 
         /// <summary>
+        /// The network peer of this game.
+        /// </summary>
+        protected NetworkPeer? Peer => (ThisGame as NetworkedGame)?.Peer;
+
+        /// <summary>
         /// Set the game this game object belongs to.
         /// </summary>
         /// <param name="game">The game.</param>
         internal void SetGame(Game game)
         {
             ThisGame = game;
+        }
+
+        /// <summary>
+        /// Tries to get a game object by its type from the game.
+        /// </summary>
+        /// <typeparam name="TGameObject">The type of the game object.</typeparam>
+        /// <returns>The game object, or nothing.</returns>
+        protected TGameObject? GetGameObjectFromGame<TGameObject>()
+            where TGameObject : GameObject
+        {
+            return ThisGame?.GetGameObjectOfType<TGameObject>();
         }
 
         /// <summary>
