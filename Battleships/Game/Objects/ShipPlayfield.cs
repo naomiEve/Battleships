@@ -36,7 +36,7 @@ namespace Battleships.Game.Objects
             _field = new CubeRenderer[10, 10];
         }
 
-        private void CreateCube(int x, int y)
+        public void CreateCube(int x, int y)
         {
             if (_field[x, y] != null)
                 return;

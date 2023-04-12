@@ -45,14 +45,27 @@ namespace Battleships.Game
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
-                .WithProjectionType(CameraProjection.CAMERA_ORTHOGRAPHIC)
-                .WithShaderPass<PixelizationShaderPass>();
+                .WithProjectionType(CameraProjection.CAMERA_ORTHOGRAPHIC);
 
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
             _gameCoordinator = AddGameObject<GameCoordinator>();
             _gameCoordinator.SetPlayfieldForPlayer(0, AddGameObject<ShipPlayfield>());
+
+            AddGameObject<Ship>()
+                .ForPlayfield(GetGameObjectOfType<ShipPlayfield>()!)
+                .AtPosition(new Vector2Int(0, 0))
+                .WithFacing(Ship.Facing.Down)
+                .WithLength(7)
+                .BuildShip();
+
+            AddGameObject<Ship>()
+                .ForPlayfield(GetGameObjectOfType<ShipPlayfield>()!)
+                .AtPosition(new Vector2Int(5, 5))
+                .WithFacing(Ship.Facing.Right)
+                .WithLength(3)
+                .BuildShip();
         }
 
         /// <inheritdoc/>
