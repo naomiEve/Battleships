@@ -1,4 +1,5 @@
-﻿using Battleships.Framework.Data;
+﻿using System.Reflection.Metadata.Ecma335;
+using Battleships.Framework.Data;
 
 namespace Battleships.Game.Objects
 {
@@ -54,11 +55,11 @@ namespace Battleships.Game.Objects
                 switch (ShipFacing)
                 {
                     case Facing.Down:
-                        _playfield!.CreateCube(Position.X, Position.Y + i);
+                        _parts.Add(_playfield!.CreateShipPart(Position.X, Position.Y + i, this));
                         break;
 
                     case Facing.Right:
-                        _playfield!.CreateCube(Position.X + i, Position.Y);
+                        _parts.Add(_playfield!.CreateShipPart(Position.X + i, Position.Y, this));
                         break;
                 }
             }

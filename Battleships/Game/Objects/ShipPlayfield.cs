@@ -16,7 +16,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The field.
         /// </summary>
-        private readonly CubeRenderer[,] _field;
+        private readonly ShipPart[,] _field;
 
         /// <summary>
         /// The preview cube.
@@ -29,22 +29,36 @@ namespace Battleships.Game.Objects
         private Camera? _camera;
 
         /// <summary>
+        /// The owner of this playfield.
+        /// </summary>
+        public int Owner { get; set; }
+
+        /// <summary>
         /// Construct a new ship playfield.
         /// </summary>
         public ShipPlayfield()
         {
-            _field = new CubeRenderer[10, 10];
+            _field = new ShipPart[10, 10];
         }
 
-        public void CreateCube(int x, int y)
+        /// <summary>
+        /// Creates a ship part at the desired x & y coordinates of the playfield.
+        /// </summary>
+        /// <param name="x">The X coordinate.</param>
+        /// <param name="y">The Y coordinate.</param>
+        /// <param name="parent">The parent ship.</param>
+        /// <returns>The created ship part.</returns>
+        public ShipPart CreateShipPart(int x, int y, Ship parent)
         {
             if (_field[x, y] != null)
-                return;
+                return _field[x, y];
 
-            var cube = ThisGame!.AddGameObject<CubeRenderer>();
-            cube.Position = new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f);
+            var part = ThisGame!.AddGameObject<ShipPart>();
+            part.Ship = parent;
+            part.Position = new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f);
 
-            _field[x, y] = cube;
+            _field[x, y] = part;
+            return part;
         }
 
         /// <inheritdoc/>
@@ -57,7 +71,15 @@ namespace Battleships.Game.Objects
             {
                 var cubeMesg = (CreateCubeMessage)mesg;
 
-                CreateCube(cubeMesg.x, cubeMesg.y);
+                CreateShipPart(cubeMesg.x, cubeMesg.y, null!);
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<BombFieldMessage>(mesg =>
+            {
+                var bombMesg = (BombFieldMessage)mesg;
+
+                if (_field[bombMesg.x, bombMesg.y] != null)
+                    _field[bombMesg.x, bombMesg.y].Sunk = true;
             });
         }
 
@@ -81,9 +103,23 @@ namespace Battleships.Game.Objects
                 var y = (int)point.Z + 5;
 
                 if (_field[x, y] != null)
-                    return;
+                {
+                    // Sink this piece.
+                    if (Owner != Peer?.PeerId)
+                    {
+                        _field[x, y].Sunk = true;
 
-                CreateCube(x, y);
+                        Peer?.Send(new BombFieldMessage
+                        {
+                            x = x,
+                            y = y
+                        });
+                    }
+
+                    return;
+                }
+
+                CreateShipPart(x, y, null!);
 
                 Peer!.Send(new CreateCubeMessage
                 {

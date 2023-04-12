@@ -21,6 +21,8 @@ namespace Battleships.Game.Objects
         {
             _playfields ??= new ShipPlayfield[2];
             _playfields[player] = playfield;
+
+            playfield.Owner = player;
         }
 
         /// <summary>

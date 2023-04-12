@@ -20,7 +20,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// Ship parts.
         /// </summary>
-        private List<ShipPart> _parts;
+        private readonly List<ShipPart> _parts;
 
         /// <summary>
         /// The playfield this ship is associated with.
