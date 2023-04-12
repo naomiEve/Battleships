@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Battleships.Framework.Data;
+﻿using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Raylib_cs;

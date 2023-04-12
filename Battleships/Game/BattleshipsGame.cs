@@ -3,7 +3,6 @@ using Battleships.Framework;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
 using Battleships.Game.Objects;
-using Battleships.Game.Shaders;
 using Raylib_cs;
 
 namespace Battleships.Game

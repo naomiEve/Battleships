@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Battleships.Framework.Shaders;
+﻿using Battleships.Framework.Shaders;
 
 namespace Battleships.Game.Shaders
 {
