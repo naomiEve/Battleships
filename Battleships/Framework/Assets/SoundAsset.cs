@@ -5,7 +5,7 @@ namespace Battleships.Framework.Assets
     /// <summary>
     /// A sound file.
     /// </summary>
-    internal class Sound : Asset
+    internal class SoundAsset : Asset
     {
         /// <summary>
         /// The raylib sound struct.
@@ -13,21 +13,12 @@ namespace Battleships.Framework.Assets
         private Raylib_cs.Sound _sound;
 
         /// <summary>
-        /// Create a sound from the file path.
-        /// </summary>
-        /// <param name="name">The file path.</param>
-        public Sound(string path) 
-            : base(path) 
-        {
-        
-        }
-
-        /// <summary>
         /// Load a sound from the file.
         /// </summary>
         /// <param name="path">The file.</param>
-        protected override void LoadFromFile(string path)
+        public override void LoadFromFile(string path)
         {
+            Path = path;
             _sound = Raylib.LoadSound(path);
         }
 

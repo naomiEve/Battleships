@@ -1,4 +1,5 @@
-﻿using Battleships.Framework.Data;
+﻿using Battleships.Framework.Assets;
+using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Raylib_cs;
@@ -36,6 +37,11 @@ namespace Battleships.Framework
         public IGameRenderer? CurrentRenderer { get; protected set; }
 
         /// <summary>
+        /// This game's asset database.
+        /// </summary>
+        public AssetDatabase AssetDatabase { get; private set; }
+
+        /// <summary>
         /// A list of all the game objects.
         /// </summary>
         private List<GameObject> _gameObjects;
@@ -53,6 +59,7 @@ namespace Battleships.Framework
             _launchOptions = opts;
 
             _gameObjects = new List<GameObject>();
+            AssetDatabase = new AssetDatabase();
         }
 
         /// <summary>

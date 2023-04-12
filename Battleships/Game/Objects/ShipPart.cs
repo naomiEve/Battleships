@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Assets;
 using Battleships.Framework.Objects;
 using Raylib_cs;
 
@@ -40,6 +41,20 @@ namespace Battleships.Game.Objects
         /// Is this part sunk?
         /// </summary>
         public bool Sunk { get; set; } = false;
+
+        /// <summary>
+        /// Sink this piece.
+        /// </summary>
+        public void Sink()
+        {
+            if (Sunk)
+                return;
+
+            Sunk = true;
+            ThisGame!.AssetDatabase
+                .Get<SoundAsset>("explosion")?
+                .Play();
+        }
 
         /// <inheritdoc/>
         public RayCollision Collide(Ray ray)

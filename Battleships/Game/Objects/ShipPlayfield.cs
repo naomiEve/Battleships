@@ -79,7 +79,7 @@ namespace Battleships.Game.Objects
                 var bombMesg = (BombFieldMessage)mesg;
 
                 if (_field[bombMesg.x, bombMesg.y] != null)
-                    _field[bombMesg.x, bombMesg.y].Sunk = true;
+                    _field[bombMesg.x, bombMesg.y].Sink();
             });
         }
 
@@ -107,7 +107,7 @@ namespace Battleships.Game.Objects
                     // Sink this piece.
                     if (Owner != Peer?.PeerId)
                     {
-                        _field[x, y].Sunk = true;
+                        _field[x, y].Sink();
 
                         Peer?.Send(new BombFieldMessage
                         {

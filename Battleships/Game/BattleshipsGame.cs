@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Battleships.Framework;
+using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
 using Battleships.Game.Objects;
@@ -41,6 +42,8 @@ namespace Battleships.Game
         /// <inheritdoc/>
         protected override void Start()
         {
+            AssetDatabase.Load<SoundAsset>("explosion", "./assets/explosion.wav");
+
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
