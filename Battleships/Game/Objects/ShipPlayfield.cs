@@ -2,7 +2,6 @@
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
-using Battleships.Game.Messages;
 using Raylib_cs;
 
 namespace Battleships.Game.Objects
@@ -38,6 +37,11 @@ namespace Battleships.Game.Objects
         /// The owner of this playfield.
         /// </summary>
         public int Owner { get; set; }
+
+        /// <summary>
+        /// The position of the grid.
+        /// </summary>
+        public Vector3 Position { get; set; }
 
         /// <summary>
         /// Construct a new ship playfield.
@@ -171,24 +175,34 @@ namespace Battleships.Game.Objects
             _shipPreview.Length = 3;
 
             _camera = GetGameObjectFromGame<Camera>();
+        }
 
-            Peer?.MessageRegistry.RegisterMessage<CreateCubeMessage>(mesg =>
-            {
-                var cubeMesg = (CreateCubeMessage)mesg;
-                CreateShipPart(cubeMesg.x, cubeMesg.y, null!);
-            });
-
-            Peer?.MessageRegistry.RegisterMessage<BombFieldMessage>(mesg =>
-            {
-                var bombMesg = (BombFieldMessage)mesg;
-                _field[bombMesg.x, bombMesg.y]?.Sink();
-            });
+        public override void Update(float dt)
+        {
+            _shipPreview!.Enabled = Owner == Peer!.PeerId;
         }
 
         /// <inheritdoc/>
         public void Draw()
         {
-            Raylib.DrawGrid(10, 1.0f);
+            var spacing = 1f;
+            var halfSlices = 5;
+
+            Rlgl.rlBegin(DrawMode.LINES);
+            for (var i = -halfSlices; i <= halfSlices; i++)
+            {
+                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+
+                Rlgl.rlVertex3f(Position.X + i * spacing, Position.Y, Position.Z + -halfSlices * spacing);
+                Rlgl.rlVertex3f(Position.X + i * spacing, Position.Y, Position.Z + halfSlices * spacing);
+
+                Rlgl.rlVertex3f(Position.X + -halfSlices * spacing, Position.Y, Position.Z + i * spacing);
+                Rlgl.rlVertex3f(Position.X + halfSlices * spacing, Position.Y, Position.Z + i * spacing);
+            }
+            Rlgl.rlEnd();
         }
 
         /// <inheritdoc/>

@@ -31,7 +31,7 @@ namespace Battleships.Framework.Networking
         /// <summary>
         /// This peer's id.
         /// </summary>
-        public int PeerId { get; protected set; } = 0;
+        public int? PeerId { get; protected set; } = null;
 
         /// <summary>
         /// Constructs a new network peer.

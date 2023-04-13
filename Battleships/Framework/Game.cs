@@ -122,9 +122,9 @@ namespace Battleships.Framework
             }
 
             obj.SetGame(this);
-            obj.Start();
-
             _gameObjects.Add(obj);
+
+            obj.Start();
 
             return obj;
         }

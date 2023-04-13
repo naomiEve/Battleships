@@ -41,6 +41,9 @@ namespace Battleships.Framework.Networking
             _server = new TcpListener(IPAddress.Any, port);
             _port = port;
             IsCurrentLockstepPeer = true;
+
+            // The server is always the zeroth peer.
+            PeerId = 0;
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace Battleships.Framework.Networking
             // Set their client id.
             Send(new SetClientIdMessage
             {
-                id = PeerId + 1
+                id = PeerId!.Value + 1
             }, SendMode.Extra);
 
             Console.WriteLine("Done!");

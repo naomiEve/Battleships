@@ -3,6 +3,7 @@ using Battleships.Framework;
 using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
+using Battleships.Game.Data;
 using Battleships.Game.Objects;
 using Raylib_cs;
 
@@ -59,27 +60,8 @@ namespace Battleships.Game
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
-            
-            _ambienceController = AddGameObject<AmbienceController>();
             _gameCoordinator = AddGameObject<GameCoordinator>();
-            _gameCoordinator.SetPlayfieldForPlayer(0, AddGameObject<ShipPlayfield>());
-        }
-
-        /// <inheritdoc/>
-        protected override void Update(float dt)
-        {
-            base.Update(dt);
-
-            var dim = new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
-            var positionWithinScreen = (Raylib.GetMousePosition() - dim / 2f) / dim;
-            positionWithinScreen.Y = -positionWithinScreen.Y;
-
-            if (MathF.Abs(positionWithinScreen.Y) >= 0.4f ||
-                MathF.Abs(positionWithinScreen.X) >= 0.4f)
-            {
-                var newPos = new Vector3(positionWithinScreen.X, 0f, positionWithinScreen.Y) * 8f * dt;
-                _camera!.Move(newPos);
-            }
+            _ambienceController = AddGameObject<AmbienceController>();
         }
     }
 }
