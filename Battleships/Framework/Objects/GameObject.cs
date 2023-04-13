@@ -18,6 +18,11 @@ namespace Battleships.Framework.Objects
         protected NetworkPeer? Peer => (ThisGame as NetworkedGame)?.Peer;
 
         /// <summary>
+        /// Is this game object enabled?
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+
+        /// <summary>
         /// Set the game this game object belongs to.
         /// </summary>
         /// <param name="game">The game.</param>

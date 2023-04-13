@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Battleships.Game.Messages;
@@ -14,6 +15,11 @@ namespace Battleships.Game.Objects
         IRaycastTargettableObject
     {
         /// <summary>
+        /// The size of the field.
+        /// </summary>
+        private const int FIELD_SIZE = 10;
+
+        /// <summary>
         /// The field.
         /// </summary>
         private readonly ShipPart[,] _field;
@@ -21,7 +27,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The preview cube.
         /// </summary>
-        private CubeRenderer? _previewCube;
+        private ShipBuilderPreview? _shipPreview;
 
         /// <summary>
         /// The camera.
@@ -38,7 +44,7 @@ namespace Battleships.Game.Objects
         /// </summary>
         public ShipPlayfield()
         {
-            _field = new ShipPart[10, 10];
+            _field = new ShipPart[FIELD_SIZE, FIELD_SIZE];
         }
 
         /// <summary>
@@ -61,72 +67,122 @@ namespace Battleships.Game.Objects
             return part;
         }
 
+        /// <summary>
+        /// Returns whether a ship can be built at this location.
+        /// </summary>
+        /// <param name="position">The position of the first element of this ship.</param>
+        /// <param name="length">The length of this ship</param>
+        /// <param name="facing">The facing of the ship.</param>
+        /// <returns>A bool for whether we can build here.</returns>
+        public bool CanBuildShipAt(Vector2Int position, float length, Ship.Facing facing)
+        {
+            // Helper for checking whether a ship part collides with any neighbors.
+            bool CollidesWithNeighbors(Vector2Int position)
+            {
+                for (var x = position.X - 1; x <= position.X + 1; x++)
+                {
+                    for (var y = position.Y - 1; y <= position.Y + 1; y++)
+                    {
+                        if (x == position.X &&
+                            y == position.Y)
+                        {
+                            if (x < 0 || x >= FIELD_SIZE ||
+                                y < 0 || y >= FIELD_SIZE)
+                            {
+                                return true;
+                            }
+                            continue;
+                        }
+
+                        if (x < 0 || x >= FIELD_SIZE ||
+                            y < 0 || y >= FIELD_SIZE)
+                        {
+                            continue;
+                        }
+
+                        if (_field[x, y] != null)
+                            return true;
+
+                        Raylib.DrawCube(new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f), 1f, 1f, 1f, Color.GREEN);
+                    }
+                }
+
+                return false;
+            }
+
+            for (var i = 0; i < length; i++)
+            {
+                var partPos = position;
+                if (facing == Ship.Facing.Down)
+                    partPos.Y += i;
+                else
+                    partPos.X += i;
+
+                if (CollidesWithNeighbors(partPos))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Builds a ship beginning with the given coordinates.
+        /// </summary>
+        /// <param name="initialPos">The initial position.</param>
+        /// <param name="length">The length of the ship.</param>
+        /// <param name="facing">The facing of the ship.</param>
+        public void BuildShip(Vector2Int initialPos, int length, Ship.Facing facing)
+        {
+            Console.WriteLine("sheep");
+
+            ThisGame?.AddGameObject<Ship>()!
+                .ForPlayfield(this)
+                .AtPosition(initialPos)
+                .WithLength(length)
+                .WithFacing(facing)
+                .BuildShip();
+        }
+
+        /// <summary>
+        /// Transforms a world space position into the playfield coordinates.
+        /// </summary>
+        /// <param name="vector">The world space position.</param>
+        /// <returns>Playfield coordinates.</returns>
+        public Vector2Int? PositionToFieldCoordinates(Vector3 vector)
+        {
+            vector.X = MathF.Floor(vector.X);
+            vector.Z = MathF.Floor(vector.Z);
+
+            var x = (int)vector.X + 5;
+            var y = (int)vector.Z + 5;
+
+            if (x < 0 || x >= FIELD_SIZE ||
+                y < 0 || y >= FIELD_SIZE)
+                return null;
+
+            return new Vector2Int(x, y);
+        }
+
         /// <inheritdoc/>
         public override void Start()
         {
-            _previewCube = ThisGame!.AddGameObject<CubeRenderer>();
+            _shipPreview = ThisGame!.AddGameObject<ShipBuilderPreview>();
+            _shipPreview!.Playfield = this;
+            _shipPreview.Length = 3;
+
             _camera = GetGameObjectFromGame<Camera>();
 
             Peer?.MessageRegistry.RegisterMessage<CreateCubeMessage>(mesg =>
             {
                 var cubeMesg = (CreateCubeMessage)mesg;
-
                 CreateShipPart(cubeMesg.x, cubeMesg.y, null!);
             });
 
             Peer?.MessageRegistry.RegisterMessage<BombFieldMessage>(mesg =>
             {
                 var bombMesg = (BombFieldMessage)mesg;
-
-                if (_field[bombMesg.x, bombMesg.y] != null)
-                    _field[bombMesg.x, bombMesg.y].Sink();
+                _field[bombMesg.x, bombMesg.y]?.Sink();
             });
-        }
-
-        /// <inheritdoc/>
-        public override void Update(float dt)
-        {
-            var collision = ThisGame!.CastRay(_camera!.MouseRay(Raylib.GetMousePosition()));
-            if (collision == null)
-                return;
-
-            // Translate this hit to the square
-            var point = collision.Value.point;
-            point.X = MathF.Floor(point.X);
-            point.Z = MathF.Floor(point.Z);
-
-            _previewCube!.Position = new Vector3(point.X + 0.5f, 0.5f, point.Z + 0.5f);
-
-            if (Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
-            {
-                var x = (int)point.X + 5;
-                var y = (int)point.Z + 5;
-
-                if (_field[x, y] != null)
-                {
-                    // Sink this piece.
-                    if (Owner != Peer?.PeerId)
-                    {
-                        _field[x, y].Sink();
-
-                        Peer?.Send(new BombFieldMessage
-                        {
-                            x = x,
-                            y = y
-                        });
-                    }
-
-                    return;
-                }
-
-                CreateShipPart(x, y, null!);
-
-                Peer!.Send(new CreateCubeMessage
-                {
-                    x = x,
-                    y = y
-                }, Framework.Networking.SendMode.Extra);
-            }
         }
 
         /// <inheritdoc/>

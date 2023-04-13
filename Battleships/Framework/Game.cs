@@ -136,9 +136,12 @@ namespace Battleships.Framework
             // Try to collide with all of the gameobjects that are raycast targets.
             foreach (var obj in _gameObjects)
             {
-                if (obj is not IRaycastTargettableObject rto)
+                if (!obj.Enabled)
                     continue;
 
+                if (obj is not IRaycastTargettableObject rto)
+                    continue;
+                
                 var collision = rto.Collide(ray);
                 if (collision.hit)
                     return collision;
@@ -164,7 +167,12 @@ namespace Battleships.Framework
         protected virtual void Update(float dt)
         {
             for (var i = 0; i < _gameObjects.Count; i++)
+            {
+                if (!_gameObjects[i].Enabled)
+                    continue;
+                
                 _gameObjects[i].Update(dt);
+            }
         }
 
         /// <summary>
@@ -174,6 +182,9 @@ namespace Battleships.Framework
         {
             foreach (var go in _gameObjects)
             {
+                if (!go.Enabled)
+                    continue;
+
                 if (go is IDrawableGameObject dgo)
                     dgo.Draw();
             }

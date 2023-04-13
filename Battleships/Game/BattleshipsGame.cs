@@ -57,20 +57,6 @@ namespace Battleships.Game
 
             _gameCoordinator = AddGameObject<GameCoordinator>();
             _gameCoordinator.SetPlayfieldForPlayer(0, AddGameObject<ShipPlayfield>());
-
-            AddGameObject<Ship>()
-                .ForPlayfield(GetGameObjectOfType<ShipPlayfield>()!)
-                .AtPosition(new Vector2Int(0, 0))
-                .WithFacing(Ship.Facing.Down)
-                .WithLength(7)
-                .BuildShip();
-
-            AddGameObject<Ship>()
-                .ForPlayfield(GetGameObjectOfType<ShipPlayfield>()!)
-                .AtPosition(new Vector2Int(5, 5))
-                .WithFacing(Ship.Facing.Right)
-                .WithLength(3)
-                .BuildShip();
         }
 
         /// <inheritdoc/>
