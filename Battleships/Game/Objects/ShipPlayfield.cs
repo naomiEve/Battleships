@@ -65,7 +65,7 @@ namespace Battleships.Game.Objects
 
             var part = ThisGame!.AddGameObject<ShipPart>();
             part.Ship = parent;
-            part.Position = new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f);
+            part.Position = new Vector3(Position.X + x - 5 + 0.5f, 0.5f, Position.Y + y - 5 + 0.5f);
 
             _field[x, y] = part;
             return part;
@@ -154,8 +154,8 @@ namespace Battleships.Game.Objects
         /// <returns>Playfield coordinates.</returns>
         public Vector2Int? PositionToFieldCoordinates(Vector3 vector)
         {
-            vector.X = MathF.Floor(vector.X);
-            vector.Z = MathF.Floor(vector.Z);
+            vector.X = MathF.Floor(vector.X - Position.X);
+            vector.Z = MathF.Floor(vector.Z - Position.Z);
 
             var x = (int)vector.X + 5;
             var y = (int)vector.Z + 5;
@@ -208,7 +208,12 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public RayCollision Collide(Ray ray)
         {
-            return Raylib.GetRayCollisionQuad(ray, new Vector3(-5f, 0f, -5f), new Vector3(-5f, 0f, 5f), new Vector3(5f, 0f, 5f), new Vector3(5f, 0f, -5f)); ;
+            return Raylib.GetRayCollisionQuad(ray, 
+                new Vector3(Position.X + -5f, 0f, Position.Z + -5f), 
+                new Vector3(Position.X + -5f, 0f, Position.Z +  5f), 
+                new Vector3(Position.X +  5f, 0f, Position.Z +  5f), 
+                new Vector3(Position.X +  5f, 0f, Position.Z + -5f)
+            );
         }
     }
 }

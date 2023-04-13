@@ -50,6 +50,8 @@ namespace Battleships.Framework.Networking
             {
                 var idMesg = (SetClientIdMessage)message;
                 PeerId = idMesg.id;
+
+                Console.WriteLine($"our id: {PeerId}.");
             });
 
             MessageRegistry.RegisterMessage<DisconnectMessage>(_ =>
