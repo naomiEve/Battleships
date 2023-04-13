@@ -92,6 +92,10 @@ namespace Battleships.Framework
                 CurrentRenderer!.Begin();
                 Draw();
                 CurrentRenderer!.End();
+
+                Raylib.BeginDrawing();
+                DrawUI();
+                Raylib.EndDrawing();
             }
 
             Destroy();
@@ -187,6 +191,21 @@ namespace Battleships.Framework
 
                 if (go is IDrawableGameObject dgo)
                     dgo.Draw();
+            }
+        }
+
+        /// <summary>
+        /// Draws any UI elements. This needs to be in two passes, as the UI has to be drawn over the game.
+        /// </summary>
+        protected virtual void DrawUI()
+        {
+            foreach (var go in _gameObjects)
+            {
+                if (!go.Enabled)
+                    continue;
+
+                if (go is IUIObject uio)
+                    uio.DrawUI();
             }
         }
 
