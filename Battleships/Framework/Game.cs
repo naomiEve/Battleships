@@ -111,6 +111,15 @@ namespace Battleships.Framework
             where TGameObject : GameObject, new()
         {
             var obj = new TGameObject();
+            
+            // If this object is a singleton, find if we perhaps already have one instantiated.
+            if (obj is ISingletonObject)
+            {
+                var singleton = _gameObjects.Find(obj => obj is ISingletonObject && obj is TGameObject);
+                if (singleton != null)
+                    return (singleton as TGameObject)!;
+            }
+
             obj.SetGame(this);
             obj.Start();
 

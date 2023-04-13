@@ -5,7 +5,8 @@ namespace Battleships.Game.Objects
     /// <summary>
     /// The battleships coordinator.
     /// </summary>
-    internal class GameCoordinator : GameObject
+    internal class GameCoordinator : GameObject,
+        ISingletonObject
     {
         /// <summary>
         /// The playfields for each player.
