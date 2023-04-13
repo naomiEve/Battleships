@@ -34,6 +34,11 @@ namespace Battleships.Framework.Networking
         public int? PeerId { get; protected set; } = null;
 
         /// <summary>
+        /// Is this peer the host?
+        /// </summary>
+        public bool IsHost => PeerId == 0;
+
+        /// <summary>
         /// Constructs a new network peer.
         /// </summary>
         public NetworkPeer()
@@ -50,8 +55,6 @@ namespace Battleships.Framework.Networking
             {
                 var idMesg = (SetClientIdMessage)message;
                 PeerId = idMesg.id;
-
-                Console.WriteLine($"our id: {PeerId}.");
             });
 
             MessageRegistry.RegisterMessage<DisconnectMessage>(_ =>

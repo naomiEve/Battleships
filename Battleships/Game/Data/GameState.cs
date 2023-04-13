@@ -6,6 +6,7 @@
     internal enum GameState
     {
         ShipBuilding,
+        Waiting,
         PlayerBombing,
         OtherPlayerBombing,
         GameOver

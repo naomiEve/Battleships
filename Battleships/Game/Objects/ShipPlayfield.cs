@@ -29,6 +29,11 @@ namespace Battleships.Game.Objects
         private ShipBuilderPreview? _shipPreview;
 
         /// <summary>
+        /// The game coordinator.
+        /// </summary>
+        private GameCoordinator? _coordinator;
+
+        /// <summary>
         /// The camera.
         /// </summary>
         private Camera? _camera;
@@ -37,6 +42,11 @@ namespace Battleships.Game.Objects
         /// The owner of this playfield.
         /// </summary>
         public int Owner { get; set; }
+
+        /// <summary>
+        /// Is this playfield finished?
+        /// </summary>
+        public bool FinishedBuilding { get; set; }
 
         /// <summary>
         /// The position of the grid.
@@ -167,19 +177,31 @@ namespace Battleships.Game.Objects
             return new Vector2Int(x, y);
         }
 
+        /// <summary>
+        /// Sets the length of the preview.
+        /// </summary>
+        /// <param name="length">The new length.</param>
+        public void SetPreviewLength(int length)
+        {
+            _shipPreview!.Length = length;
+        }
+
         /// <inheritdoc/>
         public override void Start()
         {
             _shipPreview = ThisGame!.AddGameObject<ShipBuilderPreview>();
             _shipPreview!.Playfield = this;
-            _shipPreview.Length = 3;
+            _shipPreview.Length = 4;
 
             _camera = GetGameObjectFromGame<Camera>();
+            _coordinator = GetGameObjectFromGame<GameCoordinator>();
         }
 
+        /// <inheritdoc/>
         public override void Update(float dt)
         {
-            _shipPreview!.Enabled = Owner == Peer!.PeerId;
+            _shipPreview!.Enabled = Owner == Peer!.PeerId && 
+                _coordinator?.State == Data.GameState.ShipBuilding;
         }
 
         /// <inheritdoc/>

@@ -132,6 +132,17 @@ namespace Battleships.Framework
         }
 
         /// <summary>
+        /// Gets the count of an object of type.
+        /// </summary>
+        /// <typeparam name="TGameObject"></typeparam>
+        /// <returns></returns>
+        public int GetCountOfObjectsOfType<TGameObject>()
+            where TGameObject : GameObject
+        {
+            return _gameObjects.Aggregate(0, (acc, obj) => acc + ((obj is TGameObject) ? 1 : 0));
+        }
+
+        /// <summary>
         /// Get a game object by its type.
         /// </summary>
         /// <typeparam name="TGameObject">The game object.</typeparam>

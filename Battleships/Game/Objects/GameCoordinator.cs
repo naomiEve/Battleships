@@ -1,7 +1,8 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Networking;
 using Battleships.Framework.Objects;
-using Battleships.Framework.Rendering;
 using Battleships.Game.Data;
+using Battleships.Game.Messages;
 using Raylib_cs;
 
 namespace Battleships.Game.Objects
@@ -33,9 +34,33 @@ namespace Battleships.Game.Objects
         /// </summary>
         private CameraController? _camera;
 
+        /// <summary>
+        /// The sizes of the ships we're placing in the initial round.
+        /// </summary>
+        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
+
+        /// <summary>
+        /// The current index of the ship length.
+        /// </summary>
+        private int _shipLengthIndex = 0;
+
         /// <inheritdoc/>
         public override void Start()
         {
+            Peer?.MessageRegistry.RegisterMessage<FinishedBuildingMessage>(mesg =>
+            {
+                var buildMesg = (FinishedBuildingMessage)mesg;
+
+                _playfields![buildMesg.id].FinishedBuilding = true;
+                CheckIfAllFinishedBuilding();
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<SetBomberMessage>(mesg =>
+            {
+                var bomberMesg = (SetBomberMessage)mesg;
+                SetBomber(bomberMesg.id);
+            });
+
             // Construct the playfields
             var player1Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
             var player2Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
@@ -52,6 +77,40 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Check if all players have finished building.
+        /// </summary>
+        private void CheckIfAllFinishedBuilding()
+        {
+            if (!Peer!.IsHost)
+                return;
+
+            var count = _playfields!.Count(field => field.FinishedBuilding);
+            Console.WriteLine(count);
+
+            // If everyone finished building, commence the next part.
+            if (count == _playfields!.Length)
+            {
+                // Roll a die to decide who gets the next move.
+                var player = Random.Shared.Next(0, 1);
+                Peer?.Send(new SetBomberMessage
+                {
+                    id = player,
+                }, player == Peer?.PeerId ? SendMode.Extra : SendMode.Lockstep);
+
+                SetBomber(player);
+            }
+        }
+
+        /// <summary>
+        /// Sets the current bomber.
+        /// </summary>
+        /// <param name="player">The player.</param>
+        private void SetBomber(int player)
+        {
+            SetState(player == Peer!.PeerId ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
+        }
+
+        /// <summary>
         /// Set our own state.
         /// </summary>
         /// <param name="state">The state to set.</param>
@@ -63,6 +122,14 @@ namespace Battleships.Game.Objects
             {
                 case GameState.ShipBuilding:
                     _camera!.Objective = CameraObjective.MoveToSelf;
+                    _shipLengthIndex = 0;
+
+                    foreach (var field in _playfields!)
+                        field.SetPreviewLength(_shipLengths[_shipLengthIndex]);
+                    break;
+
+                case GameState.Waiting:
+                    _camera!.Objective = CameraObjective.Idle;
                     break;
 
                 case GameState.PlayerBombing:
@@ -102,10 +169,33 @@ namespace Battleships.Game.Objects
             return _playfields?[player];
         }
 
+        /// <inheritdoc/>
         public override void Update(float dt)
         {
-            if (Raylib.IsKeyPressed(KeyboardKey.KEY_N))
-                _camera!.Objective = CameraObjective.MoveToEnemy;
+            // If we're building the ships, we need to check how many ships we've built.
+            // And stop if we've built them all.
+            if (State == GameState.ShipBuilding)
+            {
+                if (ThisGame?.GetCountOfObjectsOfType<Ship>() > _shipLengthIndex)
+                {
+                    _shipLengthIndex += 1;
+                    if (_shipLengthIndex < _shipLengths.Length)
+                    {
+                        _playfields![Peer!.PeerId!.Value].SetPreviewLength(_shipLengths[_shipLengthIndex]);
+                    }
+                    else
+                    {
+                        _playfields![Peer!.PeerId!.Value].FinishedBuilding = true;
+                        Peer!.Send(new FinishedBuildingMessage
+                        {
+                            id = Peer!.PeerId!.Value
+                        }, SendMode.Extra);
+                        SetState(GameState.Waiting);
+
+                        CheckIfAllFinishedBuilding();
+                    }
+                }
+            }
         }
 
         /// <inheritdoc/>
