@@ -24,6 +24,11 @@ namespace Battleships.Game
         private GameCoordinator? _gameCoordinator;
 
         /// <summary>
+        /// The ambience controller.
+        /// </summary>
+        private AmbienceController? _ambienceController;
+
+        /// <summary>
         /// Construct a new battleship logic with the given launch options.
         /// </summary>
         /// <param name="opts">The launch options.</param>
@@ -51,10 +56,11 @@ namespace Battleships.Game
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
                 .WithProjectionType(CameraProjection.CAMERA_ORTHOGRAPHIC);
-
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
+            
+            _ambienceController = AddGameObject<AmbienceController>();
             _gameCoordinator = AddGameObject<GameCoordinator>();
             _gameCoordinator.SetPlayfieldForPlayer(0, AddGameObject<ShipPlayfield>());
         }

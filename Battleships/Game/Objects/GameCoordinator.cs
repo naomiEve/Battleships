@@ -1,4 +1,6 @@
 ﻿using Battleships.Framework.Objects;
+using Battleships.Game.Data;
+using Raylib_cs;
 
 namespace Battleships.Game.Objects
 {
@@ -6,12 +8,24 @@ namespace Battleships.Game.Objects
     /// The battleships coordinator.
     /// </summary>
     internal class GameCoordinator : GameObject,
-        ISingletonObject
+        ISingletonObject,
+        IUIObject
     {
+        /// <summary>
+        /// The current state of the game.
+        /// </summary>
+        public GameState State { get; private set; }
+        
         /// <summary>
         /// The playfields for each player.
         /// </summary>
         private ShipPlayfield[]? _playfields;
+
+        /// <inheritdoc/>
+        public override void Start()
+        {
+            
+        }
 
         /// <summary>
         /// Set a playfield for a player.
@@ -33,6 +47,12 @@ namespace Battleships.Game.Objects
         public void MoveCameraToPlayfield(int player)
         {
             // TODO
+        }
+
+        /// <inheritdoc/>
+        public void DrawUI()
+        {
+            Raylib.DrawText($"Current state: {State}.", 0, 0, 20, Color.BLACK);
         }
     }
 }
