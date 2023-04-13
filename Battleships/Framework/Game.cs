@@ -100,6 +100,8 @@ namespace Battleships.Framework
             }
 
             Destroy();
+
+            Raylib.CloseAudioDevice();
             Raylib.CloseWindow();
         }
 

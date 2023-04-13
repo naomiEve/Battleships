@@ -8,6 +8,5 @@
         Idle,
         MoveToSelf,
         MoveToEnemy,
-        Locked
     }
 }

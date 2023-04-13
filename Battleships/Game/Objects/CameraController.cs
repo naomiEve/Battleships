@@ -41,26 +41,9 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public override void Update(float dt)
         {
-            // A locked camera does nothing.
-            if (Objective == CameraObjective.Locked)
-                return;
-
-            // If we're idling, allow for free movement.
+            // If we're idling, do nothing.
             if (Objective == CameraObjective.Idle)
-            {
-                var dim = new Vector2(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
-                var positionWithinScreen = (Raylib.GetMousePosition() - dim / 2f) / dim;
-                positionWithinScreen.Y = -positionWithinScreen.Y;
-
-                if (MathF.Abs(positionWithinScreen.Y) >= 0.4f ||
-                    MathF.Abs(positionWithinScreen.X) >= 0.4f)
-                {
-                    var newPos = new Vector3(positionWithinScreen.X, 0f, positionWithinScreen.Y) * 8f * dt;
-                    _camera!.Move(newPos);
-                }
-
                 return;
-            }
 
             // Now, if we're moving, we first need to know our own peer id.
             if (Peer?.PeerId == null)
@@ -71,13 +54,8 @@ namespace Battleships.Game.Objects
                 ourId :
                 (ourId + 1) % 2;
 
-            var targetPlayfield = _coordinator!.GetPlayfieldForPlayer(targetId);
-            var targetPos = targetPlayfield!.Position;
-
-            Console.WriteLine($"Moving to: {_camera!.Position + targetPos} (camera at: {_camera!.Position})");
-
-            // TODO(pref): lerp
-            _camera!.Move(targetPos);
+            var target = _coordinator!.GetPlayfieldForPlayer(targetId);
+            _camera!.SnapTo(target!.Position);
             Objective = CameraObjective.Idle;
         }
     }

@@ -16,7 +16,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The distance between both playfields.
         /// </summary>
-        const int PLAYFIELD_DISTANCE = 50;
+        const float PLAYFIELD_DISTANCE = 15f;
 
         /// <summary>
         /// The current state of the game.
@@ -41,7 +41,7 @@ namespace Battleships.Game.Objects
             var player2Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
 
             // Move the second player's playfield further.
-            player2Playfield.Position = new Vector3(PLAYFIELD_DISTANCE, 0, PLAYFIELD_DISTANCE);
+            player2Playfield.Position = new Vector3(PLAYFIELD_DISTANCE, 0, 0);
 
             SetPlayfieldForPlayer(0, player1Playfield);
             SetPlayfieldForPlayer(1, player2Playfield);
@@ -74,7 +74,7 @@ namespace Battleships.Game.Objects
                     break;
 
                 case GameState.GameOver:
-                    _camera!.Objective = CameraObjective.Locked;
+                    _camera!.Objective = CameraObjective.Idle;
                     break;
             }
         }
@@ -100,6 +100,12 @@ namespace Battleships.Game.Objects
         public ShipPlayfield? GetPlayfieldForPlayer(int player)
         {
             return _playfields?[player];
+        }
+
+        public override void Update(float dt)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_N))
+                _camera!.Objective = CameraObjective.MoveToEnemy;
         }
 
         /// <inheritdoc/>

@@ -52,6 +52,11 @@ namespace Battleships.Framework.Rendering
         public Vector3 Rotation { get; private set; }
 
         /// <summary>
+        /// The target.
+        /// </summary>
+        public Vector3 Target => _camera.target;
+
+        /// <summary>
         /// Construct a new camera.
         /// </summary>
         public Camera()
@@ -88,6 +93,15 @@ namespace Battleships.Framework.Rendering
         public Ray MouseRay(Vector2 mousePosition)
         {
             return Raylib.GetMouseRay(mousePosition, _camera);
+        }
+
+        /// <summary>
+        /// Sets the camera's target.
+        /// </summary>
+        /// <param name="target">The target.</param>
+        public void SetTarget(Vector3 target)
+        {
+            _camera.target = target;
         }
 
         /// <summary>
@@ -151,6 +165,34 @@ namespace Battleships.Framework.Rendering
             MoveForward(delta.Z, true);
             MoveUp(delta.Y);
             MoveRight(delta.X, true);
+        }
+
+
+        /// <summary>
+        /// Snaps to a position.
+        /// </summary>
+        /// <param name="target">The position.</param>
+        public void SnapTo(Vector3 target)
+        {
+            var fwd = Forward;
+            fwd.Y = 0;
+            fwd = Raymath.Vector3Normalize(fwd);
+
+            var right = Right;
+            right.Y = 0;
+            right = Raymath.Vector3Normalize(right);
+
+            var l = target - Target;
+            l.X /= fwd.X;
+            l.Z /= fwd.Z;
+
+            var l2 = target - Target;
+            l2.X /= right.X;
+            l2.Z /= right.Z;
+
+            Move(new Vector3(l.X / 2f, 0f, l2.X / 2f));
+
+            Console.WriteLine($"Should snap to: {target}, actual target: {Target}");
         }
 
         /// <summary>
