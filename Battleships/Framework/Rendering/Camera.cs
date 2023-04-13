@@ -8,7 +8,8 @@ namespace Battleships.Framework.Rendering
     /// <summary>
     /// A camera.
     /// </summary>
-    internal partial class Camera : GameObject, IGameRenderer
+    internal partial class Camera : GameObject, 
+        IGameRenderer
     {
         /// <summary>
         /// The camera we're using.
@@ -23,7 +24,7 @@ namespace Battleships.Framework.Rendering
         /// <summary>
         /// The backing render texture for this camera.
         /// </summary>
-        private RenderTexture2D? _backingTexture;
+        private RenderTexture2D _backingTexture;
 
         /// <summary>
         /// Forward vector.
@@ -64,6 +65,8 @@ namespace Battleships.Framework.Rendering
             );
 
             Rotation = Vector3.Zero;
+
+            _backingTexture = Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
         }
 
         /// <summary>
@@ -75,9 +78,6 @@ namespace Battleships.Framework.Rendering
         {
             _shaderPasses ??= new List<ShaderPass>();
             _shaderPasses.Add(new TPass());
-
-            // Construct a backing render texture in case one doesn't exist.
-            _backingTexture ??= Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
         }
 
         /// <summary>
@@ -243,27 +243,23 @@ namespace Battleships.Framework.Rendering
             Rotation = angles;
         }
 
-        /// <summary>
-        /// Draws what the camera sees onto the screen.
-        /// </summary>
-        private void Blit()
+        /// <inheritdoc/>
+        public void Blit()
         {
-            // This only makes sense if we're using any backing textures.
-            if (_backingTexture == null)
-                return;
+            if (_shaderPasses != null)
+            {
+                for (var i = 0; i < _shaderPasses!.Count; i++)
+                    _shaderPasses[i].Begin();
+            }
 
-            Raylib.BeginDrawing();
+            var rect = new Rectangle(0, 0, _backingTexture.texture.width, -_backingTexture.texture.height);
+            Raylib.DrawTextureRec(_backingTexture.texture, rect, Vector2.Zero, Color.WHITE);
 
-            for (var i = 0; i < _shaderPasses!.Count; i++)
-                _shaderPasses[i].Begin();
-
-            var rect = new Rectangle(0, 0, _backingTexture.Value.texture.width, -_backingTexture.Value.texture.height);
-            Raylib.DrawTextureRec(_backingTexture.Value.texture, rect, Vector2.Zero, Color.WHITE);
-
-            for (var i = _shaderPasses!.Count - 1; i >= 0; i--)
-                _shaderPasses[i].End();
-
-            Raylib.EndDrawing();
+            if (_shaderPasses != null)
+            {
+                for (var i = _shaderPasses!.Count - 1; i >= 0; i--)
+                    _shaderPasses[i].End();
+            }
         }
 
         /// <summary>
@@ -271,10 +267,7 @@ namespace Battleships.Framework.Rendering
         /// </summary>
         public void Begin()
         {
-            if (_backingTexture != null)
-                Raylib.BeginTextureMode(_backingTexture.Value);
-            else
-                Raylib.BeginDrawing();
+            Raylib.BeginTextureMode(_backingTexture);
 
             Raylib.BeginMode3D(_camera);
             Raylib.ClearBackground(Color.WHITE);
@@ -286,13 +279,7 @@ namespace Battleships.Framework.Rendering
         public void End()
         {
             Raylib.EndMode3D();
-
-            if (_backingTexture != null)
-                Raylib.EndTextureMode();
-            else
-                Raylib.EndDrawing();
-
-            Blit();
+            Raylib.EndTextureMode();
         }
     }
 }

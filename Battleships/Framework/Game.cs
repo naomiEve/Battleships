@@ -94,6 +94,7 @@ namespace Battleships.Framework
                 CurrentRenderer!.End();
 
                 Raylib.BeginDrawing();
+                CurrentRenderer!.Blit();
                 DrawUI();
                 Raylib.EndDrawing();
             }

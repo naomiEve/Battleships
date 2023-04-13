@@ -11,5 +11,10 @@
         /// End the rendering.
         /// </summary>
         void End();
+
+        /// <summary>
+        /// Blit the camera to the screen.
+        /// </summary>
+        void Blit();
     }
 }
