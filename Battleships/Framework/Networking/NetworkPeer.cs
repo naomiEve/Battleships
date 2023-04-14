@@ -107,11 +107,18 @@ namespace Battleships.Framework.Networking
         public void Send<TMessage>(TMessage message, SendMode mode = SendMode.Lockstep, bool passLockstep = true)
             where TMessage : INetworkMessage
         {
+            Console.WriteLine($"trying to send {typeof(TMessage).FullName}");
             if (mode == SendMode.Lockstep)
             {
                 if (!IsCurrentLockstepPeer)
+                {
+                    Console.WriteLine("but no lockstep");
                     return;
+                }
             }
+
+            if (mode == SendMode.Lockstep && passLockstep)
+                PassLockstep();
 
             var id = typeof(TMessage).GetHashCode();
             if (!MessageRegistry.HasMessageTypeId(id))
@@ -124,9 +131,6 @@ namespace Battleships.Framework.Networking
             SendBytes(_buffer.Span[..written]);
 
             Console.WriteLine($"sent {written} bytes for message of type {typeof(TMessage).FullName}.");
-
-            if (mode == SendMode.Lockstep && passLockstep)
-                PassLockstep();
         }
 
         /// <summary>

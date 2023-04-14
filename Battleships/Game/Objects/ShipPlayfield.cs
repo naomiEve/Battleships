@@ -2,6 +2,7 @@
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
+using Battleships.Game.Messages;
 using Raylib_cs;
 
 namespace Battleships.Game.Objects
@@ -34,11 +35,6 @@ namespace Battleships.Game.Objects
         private GameCoordinator? _coordinator;
 
         /// <summary>
-        /// The camera.
-        /// </summary>
-        private Camera? _camera;
-
-        /// <summary>
         /// The owner of this playfield.
         /// </summary>
         public int Owner { get; set; }
@@ -54,11 +50,75 @@ namespace Battleships.Game.Objects
         public Vector3 Position { get; set; }
 
         /// <summary>
+        /// The bomb selection preview.
+        /// </summary>
+        public BombSelectionPreview? BombPreview { get; set; }
+
+        /// <summary>
         /// Construct a new ship playfield.
         /// </summary>
         public ShipPlayfield()
         {
             _field = new ShipPart[FIELD_SIZE, FIELD_SIZE];
+        }
+
+        /// <summary>
+        /// Tries to bomb a field.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        public void SendBombField(Vector2Int position)
+        {
+            Peer?.Send(new BombFieldMessage
+            {
+                x = position.X,
+                y = position.Y,
+                field = Owner
+            });
+
+            _coordinator?.SetState(Data.GameState.Waiting);
+        }
+
+        /// <summary>
+        /// Tries to bomb a field at the given coordinates.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        public void TryBombField(Vector2Int position)
+        {
+            if (position.X < 0 || position.X >= FIELD_SIZE ||
+                position.Y < 0 || position.Y >= FIELD_SIZE)
+            {
+                Peer?.Send(new BombingResultMessage
+                {
+                    hit = false
+                });
+                return;
+            }
+
+            var part = _field[position.X, position.Y];
+            if (part == null)
+            {
+                Peer?.Send(new BombingResultMessage
+                {
+                    hit = false
+                });
+                return;
+            }
+
+            if (part.Sunk)
+            {
+                Peer?.Send(new BombingResultMessage
+                {
+                    hit = false
+                });
+                return;
+            }
+
+            part.Sink();
+
+            Peer?.Send(new BombingResultMessage
+            {
+                hit = true
+            });
         }
 
         /// <summary>
@@ -189,19 +249,24 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public override void Start()
         {
+            BombPreview = ThisGame!.AddGameObject<BombSelectionPreview>();
+            BombPreview.Playfield = this;
+
             _shipPreview = ThisGame!.AddGameObject<ShipBuilderPreview>();
             _shipPreview!.Playfield = this;
             _shipPreview.Length = 4;
 
-            _camera = GetGameObjectFromGame<Camera>();
             _coordinator = GetGameObjectFromGame<GameCoordinator>();
         }
 
         /// <inheritdoc/>
         public override void Update(float dt)
         {
-            _shipPreview!.Enabled = Owner == Peer!.PeerId && 
+            _shipPreview!.Enabled = Owner == Peer!.PeerId &&
                 _coordinator?.State == Data.GameState.ShipBuilding;
+
+            BombPreview!.Enabled = Owner != Peer!.PeerId &&
+                _coordinator?.State == Data.GameState.PlayerBombing;
         }
 
         /// <inheritdoc/>
@@ -230,11 +295,11 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public RayCollision Collide(Ray ray)
         {
-            return Raylib.GetRayCollisionQuad(ray, 
-                new Vector3(Position.X + -5f, 0f, Position.Z + -5f), 
-                new Vector3(Position.X + -5f, 0f, Position.Z +  5f), 
-                new Vector3(Position.X +  5f, 0f, Position.Z +  5f), 
-                new Vector3(Position.X +  5f, 0f, Position.Z + -5f)
+            return Raylib.GetRayCollisionQuad(ray,
+                new Vector3(Position.X + -5f, 0f, Position.Z + -5f),
+                new Vector3(Position.X + -5f, 0f, Position.Z + 5f),
+                new Vector3(Position.X + 5f, 0f, Position.Z + 5f),
+                new Vector3(Position.X + 5f, 0f, Position.Z + -5f)
             );
         }
     }

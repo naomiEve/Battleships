@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Data;
 using Battleships.Framework.Networking;
 using Battleships.Framework.Objects;
 using Battleships.Game.Data;
@@ -37,8 +38,8 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The sizes of the ships we're placing in the initial round.
         /// </summary>
-        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-
+        //private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
+        private readonly static int[] _shipLengths = { 4, 3 };
         /// <summary>
         /// The current index of the ship length.
         /// </summary>
@@ -58,7 +59,29 @@ namespace Battleships.Game.Objects
             Peer?.MessageRegistry.RegisterMessage<SetBomberMessage>(mesg =>
             {
                 var bomberMesg = (SetBomberMessage)mesg;
-                SetBomber(bomberMesg.id);
+                Console.WriteLine($"bomber={bomberMesg.id}");
+                SetBomber(bomberMesg.id, false);
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<BombFieldMessage>(mesg =>
+            {
+                var bombMesg = (BombFieldMessage)mesg;
+
+                var playfield = _playfields![bombMesg.field];
+                playfield.TryBombField(new Vector2Int(bombMesg.x, bombMesg.y));
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<BombingResultMessage>(mesg =>
+            {
+                var resultMesg = (BombingResultMessage)mesg;
+
+                // We've hit, continue bombing.
+                if (resultMesg.hit)
+                    SetState(GameState.PlayerBombing);
+
+                // Otherwise, the other player gets to bomb.
+                else
+                    SetBomber((Peer!.PeerId!.Value + 1) % 2, true);
             });
 
             // Construct the playfields
@@ -92,12 +115,7 @@ namespace Battleships.Game.Objects
             {
                 // Roll a die to decide who gets the next move.
                 var player = Random.Shared.Next(0, 1);
-                Peer?.Send(new SetBomberMessage
-                {
-                    id = player,
-                }, player == Peer?.PeerId ? SendMode.Extra : SendMode.Lockstep);
-
-                SetBomber(player);
+                SetBomber(player, true);
             }
         }
 
@@ -105,9 +123,18 @@ namespace Battleships.Game.Objects
         /// Sets the current bomber.
         /// </summary>
         /// <param name="player">The player.</param>
-        private void SetBomber(int player)
+        /// <param name="sendMessage">Should we send the message to the other player?</param>
+        private void SetBomber(int player, bool sendMessage)
         {
             SetState(player == Peer!.PeerId ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
+
+            if (sendMessage)
+            {
+                Peer?.Send(new SetBomberMessage
+                {
+                    id = player,
+                }, passLockstep: State == GameState.OtherPlayerBombing);
+            }
         }
 
         /// <summary>

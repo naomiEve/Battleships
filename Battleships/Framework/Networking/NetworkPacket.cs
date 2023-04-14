@@ -48,7 +48,8 @@ namespace Battleships.Framework.Networking
 
             Message?.Deserialize(ref reader);
 
-            Console.WriteLine($"Got a message of type {MessageType} with mode {Mode}. Inner message exists? {Message != null}");
+            if (Message != null)
+                Console.WriteLine($"Got a message of type {Message.GetType().FullName} with mode {Mode}.");
         }
 
         /// <summary>

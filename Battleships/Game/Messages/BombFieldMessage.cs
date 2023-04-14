@@ -9,17 +9,20 @@ namespace Battleships.Game.Messages
     internal struct BombFieldMessage : INetworkMessage
     {
         public int x, y;
+        public int field;
 
         public void Deserialize(ref NetworkReader reader)
         {
             x = reader.Read<int>();
             y = reader.Read<int>();
+            field = reader.Read<int>();
         }
 
         public void Serialize(ref NetworkWriter writer)
         {
             writer.Write(x);
             writer.Write(y);
+            writer.Write(field);
         }
     }
 }
