@@ -80,6 +80,21 @@ namespace Battleships.Game.Objects
                     SetState(GameState.PlayerBombing);
             });
 
+            Peer?.MessageRegistry.RegisterMessage<FieldClearedMessage>(mesg =>
+            {
+                var clearedMesg = (FieldClearedMessage)mesg;
+
+                var winner = (clearedMesg.id + 1) % 2;
+                SetGameOver(winner, true);                
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<GameOverMessage>(mesg =>
+            {
+                var gameOverMesg = (GameOverMessage)mesg;
+
+                SetGameOver(gameOverMesg.winner, false);
+            });
+
             // Construct the playfields
             var player1Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
             var player2Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
@@ -190,6 +205,26 @@ namespace Battleships.Game.Objects
         public ShipPlayfield? GetPlayfieldForPlayer(int player)
         {
             return _playfields?[player];
+        }
+
+        /// <summary>
+        /// Sets the game over state.
+        /// </summary>
+        /// <param name="winner">The winner index.</param>
+        /// <param name="sendMessage">Should we send a message to the other peer?</param>
+        public void SetGameOver(int winner, bool sendMessage)
+        {
+            SetState(GameState.GameOver);
+            var gameOver = ThisGame!.AddGameObject<GameOverText>();
+            gameOver.Winner = winner;
+
+            if (sendMessage)
+            {
+                Peer?.Send(new GameOverMessage
+                {
+                    winner = winner
+                }, SendMode.Extra);
+            }
         }
 
         /// <inheritdoc/>

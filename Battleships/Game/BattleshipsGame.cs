@@ -3,7 +3,6 @@ using Battleships.Framework;
 using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
-using Battleships.Game.Data;
 using Battleships.Game.Objects;
 using Raylib_cs;
 
@@ -18,16 +17,6 @@ namespace Battleships.Game
         /// The camera.
         /// </summary>
         private Camera? _camera;
-
-        /// <summary>
-        /// The game coordinator.
-        /// </summary>
-        private GameCoordinator? _gameCoordinator;
-
-        /// <summary>
-        /// The ambience controller.
-        /// </summary>
-        private AmbienceController? _ambienceController;
 
         /// <summary>
         /// Construct a new battleship logic with the given launch options.
@@ -60,8 +49,8 @@ namespace Battleships.Game
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
-            _gameCoordinator = AddGameObject<GameCoordinator>();
-            _ambienceController = AddGameObject<AmbienceController>();
+            AddGameObject<GameCoordinator>();
+            AddGameObject<AmbienceController>();
         }
     }
 }

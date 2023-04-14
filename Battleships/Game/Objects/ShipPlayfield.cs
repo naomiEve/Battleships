@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
@@ -121,10 +122,35 @@ namespace Battleships.Game.Objects
 
             part.Sink();
 
+            var unsunk = GetUnsunkPieces();
+
             Peer?.Send(new BombingResultMessage
             {
                 hit = true
-            });
+            }, passLockstep: unsunk > 0);
+
+            // If we have no more afloat pieces, send the field cleared message.
+            if (unsunk == 0)
+            {
+                Peer?.Send(new FieldClearedMessage
+                {
+                    id = Peer!.PeerId!.Value
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets the amount of unsunk pieces.
+        /// </summary>
+        /// <returns>The unsunk pieces.</returns>
+        private int GetUnsunkPieces()
+        {
+            var count = 0;
+            for (var x = 0; x < FIELD_SIZE; x++)
+                for (var y = 0; y < FIELD_SIZE; y++)
+                    count += (_field[x, y]?.Sunk == false) ? 1 : 0;
+
+            return count;
         }
 
         /// <summary>
