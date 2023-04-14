@@ -90,7 +90,9 @@ namespace Battleships.Game.Objects
                 Peer?.Send(new BombingResultMessage
                 {
                     hit = false
-                });
+                }, passLockstep: false);
+
+                _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
             }
 
@@ -100,7 +102,9 @@ namespace Battleships.Game.Objects
                 Peer?.Send(new BombingResultMessage
                 {
                     hit = false
-                });
+                }, passLockstep: false);
+                
+                _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
             }
 
@@ -109,7 +113,9 @@ namespace Battleships.Game.Objects
                 Peer?.Send(new BombingResultMessage
                 {
                     hit = false
-                });
+                }, passLockstep: false);
+
+                _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
             }
 

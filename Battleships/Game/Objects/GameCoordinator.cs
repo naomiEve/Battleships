@@ -78,10 +78,6 @@ namespace Battleships.Game.Objects
                 // We've hit, continue bombing.
                 if (resultMesg.hit)
                     SetState(GameState.PlayerBombing);
-
-                // Otherwise, the other player gets to bomb.
-                else
-                    SetBomber((Peer!.PeerId!.Value + 1) % 2, true);
             });
 
             // Construct the playfields
@@ -124,7 +120,7 @@ namespace Battleships.Game.Objects
         /// </summary>
         /// <param name="player">The player.</param>
         /// <param name="sendMessage">Should we send the message to the other player?</param>
-        private void SetBomber(int player, bool sendMessage)
+        public void SetBomber(int player, bool sendMessage)
         {
             SetState(player == Peer!.PeerId ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
 
