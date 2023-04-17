@@ -4,7 +4,7 @@
     /// A generic tween.
     /// </summary>
     /// <typeparam name="TValue">The tweened value.</typeparam>
-    internal class Tween<TValue> : ITween
+    internal partial class Tween<TValue> : ITween
     {
         /// <summary>
         /// The current value.
@@ -53,6 +53,14 @@
 
         /// <inheritdoc/>
         public bool Finished { get; private set; } = false;
+
+        /// <summary>
+        /// Constructs an empty tween.
+        /// </summary>
+        public Tween()
+        {
+
+        }
 
         /// <summary>
         /// Constructs a new tween.

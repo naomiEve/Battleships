@@ -52,23 +52,21 @@ namespace Battleships.Game.Objects
         {
             _moverTween?.Kill();
 
-            _moverTween = new Tween<Vector3>(
-                _camera!.Target,
-                newPosition,
-                MOVEMENT_SPEED,
-                TimeEasing.OutCubic,
-                (a, b, t) => a.LinearInterpolation(b, t),
-                position => _camera!.SnapTo(position),
-                fin =>
+            _moverTween = new Tween<Vector3>()
+                .WithBeginningValue(_camera!.Target)
+                .WithEndingValue(newPosition)
+                .WithTime(MOVEMENT_SPEED)
+                .WithEasing(TimeEasing.OutCubic)
+                .WithIncrementer((a, b, t) => a.LinearInterpolation(b, t))
+                .WithUpdateCallback(position => _camera!.SnapTo(position))
+                .WithFinishedCallback(fin =>
                 {
                     _camera!.SnapTo(fin);
                     _moverTween = null;
 
                     Objective = CameraObjective.Idle;
-                });
-
-            GetGameObjectFromGame<TweenEngine>()!
-                .AddTween(_moverTween);
+                })
+                .BindTo(GetGameObjectFromGame<TweenEngine>()!);
         }
 
         /// <inheritdoc/>
