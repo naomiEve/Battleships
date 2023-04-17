@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Objects;
-using Battleships.Framework.Shaders;
+using Battleships.Framework.Rendering.Shaders;
 using Raylib_cs;
 
 namespace Battleships.Framework.Rendering

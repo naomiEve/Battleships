@@ -1,6 +1,6 @@
 ﻿using Raylib_cs;
 
-namespace Battleships.Framework.Shaders
+namespace Battleships.Framework.Rendering.Shaders
 {
     /// <summary>
     /// A single shader pass.
