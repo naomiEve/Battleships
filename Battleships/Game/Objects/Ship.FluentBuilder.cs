@@ -70,6 +70,8 @@ namespace Battleships.Game.Objects
                     part?.SetType(ShipPart.PartType.Tail);
                 else
                     part?.SetType(ShipPart.PartType.Body);
+
+                _parts.Add(part!);
             }
         }
     }

@@ -18,6 +18,11 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// The bobbing speed.
+        /// </summary>
+        const float BOBBING_SPEED = 3f; 
+
+        /// <summary>
         /// Ship parts.
         /// </summary>
         private readonly List<ShipPart> _parts;
@@ -48,11 +53,26 @@ namespace Battleships.Game.Objects
         public Vector2Int Position { get; private set; }
 
         /// <summary>
+        /// The elapsed time.
+        /// </summary>
+        private float _elapsed;
+
+        /// <summary>
         /// Constructs a new ship.
         /// </summary>
         public Ship()
         {
             _parts = new List<ShipPart>();
+        }
+
+        /// <inheritdoc/>
+        public override void Update(float dt)
+        {
+            _elapsed += dt;
+
+            var sin = MathF.Sin(_elapsed * BOBBING_SPEED);
+            foreach (var part in _parts)
+                part.BobOffset = sin;
         }
     }
 }

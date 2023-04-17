@@ -42,6 +42,11 @@ namespace Battleships.Game.Objects
         public bool Sunk { get; set; } = false;
 
         /// <summary>
+        /// The bobbing offset.
+        /// </summary>
+        public float BobOffset { get; set; } = 0f;
+
+        /// <summary>
         /// The model this ship has.
         /// </summary>
         private ModelAsset? _model;
@@ -96,10 +101,12 @@ namespace Battleships.Game.Objects
                 return;
             }
 
+            var pos = Position + new Vector3(0f, 0.2f, 0f) * BobOffset;
+
             if (Ship!.ShipFacing == Ship.Facing.Right)
-                Raylib.DrawModelEx(_model.Model, Position, Vector3.UnitY, 90f, new Vector3(0.5f), Color.RED);
+                Raylib.DrawModelEx(_model.Model, pos, Vector3.UnitY, 90f, new Vector3(0.5f), Color.RED);
             else
-                Raylib.DrawModel(_model.Model, Position, 0.5f, Color.YELLOW);
+                Raylib.DrawModel(_model.Model, pos, 0.5f, Color.YELLOW);
         }
     }
 }
