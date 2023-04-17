@@ -97,7 +97,7 @@
         {
             Value = EndValue;
             Finished = true;
-            OnFinished?.Invoke(Value);
+            OnFinished?.Invoke(Value!);
         }
 
         /// <inheritdoc/>

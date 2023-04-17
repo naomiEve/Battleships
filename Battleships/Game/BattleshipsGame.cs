@@ -46,7 +46,9 @@ namespace Battleships.Game
             AssetDatabase.Load<MusicAsset>("waves", "./assets/waves.ogg");
             AssetDatabase.Load<TextureAsset>("crosshair", "./assets/crosshair.png");
 
-            AssetDatabase.Load<ModelAsset>("quad", "./assets/quad.obj");
+            var quad = AssetDatabase.Load<ModelAsset>("quad", "./assets/quad.obj");
+            quad.Materials![0]
+                .SetTexture(MaterialMapIndex.MATERIAL_MAP_ALBEDO, AssetDatabase.Get<TextureAsset>("crosshair")!);
 
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))

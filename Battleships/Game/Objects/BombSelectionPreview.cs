@@ -13,6 +13,16 @@ namespace Battleships.Game.Objects
         IDrawableGameObject
     {
         /// <summary>
+        /// The speed at which the size changes.
+        /// </summary>
+        const double SIZE_CHANGE_SPEED = 0.2f;
+
+        /// <summary>
+        /// The rotation speed of the crosshair.
+        /// </summary>
+        const double ROTATION_SPEED = 10f;
+
+        /// <summary>
         /// The playfield this selection is tied to.
         /// </summary>
         public ShipPlayfield? Playfield { get; set; }
@@ -80,7 +90,12 @@ namespace Battleships.Game.Objects
             if (!_hit)
                 return;
 
-            Raylib.DrawModel(_crosshair!.Model, Position, 0.3f, new Color(255, 0, 0, 128));
+            var t = (float)(Raylib.GetTime() / SIZE_CHANGE_SPEED);
+            var r = (float)(Raylib.GetTime() * ROTATION_SPEED);
+            var sin = MathF.Abs(MathF.Sin(t));
+            var scale = 0.3f + (0.2f * sin);
+
+            Raylib.DrawModelEx(_crosshair!.Model, Position, Vector3.UnitY, r, new Vector3(scale, 1f, scale), new Color(255, 255, 255, 128));
         }
     }
 }

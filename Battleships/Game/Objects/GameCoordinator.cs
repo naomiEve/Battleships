@@ -57,7 +57,6 @@ namespace Battleships.Game.Objects
             Peer?.MessageRegistry.RegisterMessage<SetBomberMessage>(mesg =>
             {
                 var bomberMesg = (SetBomberMessage)mesg;
-                Console.WriteLine($"bomber={bomberMesg.id}");
                 SetBomber(bomberMesg.id, false);
             });
 
