@@ -4,7 +4,6 @@ using Battleships.Framework.Networking;
 using Battleships.Framework.Objects;
 using Battleships.Game.Data;
 using Battleships.Game.Messages;
-using Raylib_cs;
 
 namespace Battleships.Game.Objects
 {
@@ -12,8 +11,7 @@ namespace Battleships.Game.Objects
     /// The battleships coordinator.
     /// </summary>
     internal class GameCoordinator : GameObject,
-        ISingletonObject,
-        IUIObject
+        ISingletonObject
     {
         /// <summary>
         /// The distance between both playfields.
@@ -254,13 +252,6 @@ namespace Battleships.Game.Objects
                     }
                 }
             }
-        }
-
-        /// <inheritdoc/>
-        public void DrawUI()
-        {
-            Raylib.DrawText($"Current state: {State}.", 0, 0, 20, Color.BLACK);
-            Raylib.DrawText($"Current camera objective: {_camera!.Objective}", 0, 25, 20, Color.BLACK);
         }
     }
 }

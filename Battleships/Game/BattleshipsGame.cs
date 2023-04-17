@@ -58,6 +58,8 @@ namespace Battleships.Game
             var ambience = AddGameObject<AmbienceController>();
             ambience.SetMusic(AssetDatabase.Get<MusicAsset>("waves")!);
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
+
+            AddGameObject<DebugObject>();
         }
     }
 }
