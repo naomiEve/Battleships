@@ -9,8 +9,7 @@ namespace Battleships.Game.Objects
     /// A part of a battleship.
     /// </summary>
     internal class ShipPart : GameObject,
-        IDrawableGameObject,
-        IRaycastTargettableObject
+        IDrawableGameObject
     {
         /// <summary>
         /// The type of the ship part.
@@ -83,12 +82,6 @@ namespace Battleships.Game.Objects
             ThisGame!.AssetDatabase
                 .Get<SoundAsset>("explosion")?
                 .Play();
-        }
-
-        /// <inheritdoc/>
-        public RayCollision Collide(Ray ray)
-        {
-            return Raylib.GetRayCollisionBox(ray, new BoundingBox());
         }
 
         /// <inheritdoc/>
