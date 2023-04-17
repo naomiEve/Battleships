@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
+using Battleships.Framework.Assets;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Raylib_cs;
@@ -23,6 +23,11 @@ namespace Battleships.Game.Objects
         public Vector3 Position { get; set; }
 
         /// <summary>
+        /// The crosshair.
+        /// </summary>
+        private ModelAsset? _crosshair;
+
+        /// <summary>
         /// Did we hit anything?
         /// </summary>
         private bool _hit;
@@ -36,6 +41,7 @@ namespace Battleships.Game.Objects
         public override void Start()
         {
             _camera = GetGameObjectFromGame<Camera>();
+            _crosshair = ThisGame!.AssetDatabase.Get<ModelAsset>("quad");
         }
 
         /// <inheritdoc/>
@@ -58,7 +64,7 @@ namespace Battleships.Game.Objects
             var floorPoint = collision.Value.point;
             floorPoint.X = MathF.Floor(floorPoint.X) + 0.5f;
             floorPoint.Z = MathF.Floor(floorPoint.Z) + 0.5f;
-            floorPoint.Y = 0.5f;
+            floorPoint.Y = 0f;
 
             Position = floorPoint;
 
@@ -74,7 +80,7 @@ namespace Battleships.Game.Objects
             if (!_hit)
                 return;
 
-            Raylib.DrawCube(Position, 1f, 1f, 1f, new Color(255, 0, 0, 128));
+            Raylib.DrawModel(_crosshair!.Model, Position, 0.3f, new Color(255, 0, 0, 128));
         }
     }
 }

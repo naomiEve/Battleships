@@ -46,6 +46,8 @@ namespace Battleships.Game
             AssetDatabase.Load<MusicAsset>("waves", "./assets/waves.ogg");
             AssetDatabase.Load<TextureAsset>("crosshair", "./assets/crosshair.png");
 
+            AssetDatabase.Load<ModelAsset>("quad", "./assets/quad.obj");
+
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
