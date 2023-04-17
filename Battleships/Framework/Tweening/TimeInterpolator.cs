@@ -17,6 +17,7 @@
             return easing switch
             {
                 TimeEasing.Linear => elapsed / duration,
+                TimeEasing.OutCubic => 1 - MathF.Pow(duration - elapsed, 3),
                 _ => 1
             };
         }

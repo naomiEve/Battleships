@@ -5,6 +5,7 @@
     /// </summary>
     internal enum TimeEasing
     {
-        Linear
+        Linear,
+        OutCubic
     }
 }

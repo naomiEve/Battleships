@@ -56,7 +56,7 @@ namespace Battleships.Game.Objects
                 _camera!.Target,
                 newPosition,
                 MOVEMENT_SPEED,
-                TimeEasing.Linear,
+                TimeEasing.OutCubic,
                 (a, b, t) =>
                 {
                     return a.LinearInterpolation(b, t);
