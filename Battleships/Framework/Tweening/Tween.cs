@@ -5,7 +5,6 @@
     /// </summary>
     /// <typeparam name="TValue">The tweened value.</typeparam>
     internal class Tween<TValue> : ITween
-        where TValue: IComparable<TValue>
     {
         /// <summary>
         /// The current value.
@@ -40,7 +39,12 @@
         /// <summary>
         /// User-definable. Ran whenever the tween updates.
         /// </summary>
-        public Action<TValue>? OnUpdate { get; set; }
+        public Action<TValue>? OnUpdate { get; private set; }
+
+        /// <summary>
+        /// Called when this tween finishes.
+        /// </summary>
+        public Action<TValue>? OnFinished { get; private set; }
 
         /// <summary>
         /// The elapsed time.
@@ -59,7 +63,14 @@
         /// <param name="easing">The given easing.</param>
         /// <param name="incrementer">The incrementer for the value.</param>
         /// <param name="onUpdate">The function to be invoked when the tween updates.</param>
-        public Tween(TValue? beginningValue, TValue? endValue, float time, TimeEasing easing, Func<TValue, TValue, float, TValue>? incrementer, Action<TValue>? onUpdate = null)
+        public Tween(
+            TValue? beginningValue, 
+            TValue? endValue, 
+            float time, 
+            TimeEasing easing, 
+            Func<TValue, TValue, float, TValue>? incrementer, 
+            Action<TValue>? onUpdate = null, 
+            Action<TValue>? onFinished = null)
         {
             Value = beginningValue;
             BeginningValue = beginningValue;
@@ -68,11 +79,24 @@
             Easing = easing;
             Incrementer = incrementer;
             OnUpdate = onUpdate;
+            OnFinished = onFinished;
+        }
+
+        /// <summary>
+        /// Kills this tween.
+        /// </summary>
+        public void Kill()
+        {
+            Value = EndValue;
+            Finished = true;
         }
 
         /// <inheritdoc/>
         public void UpdateTween(float dt)
         {
+            if (Finished)
+                return;
+
             _elapsed += dt;
             var interpolationFactor = TimeInterpolator.Evaluate(Easing, _elapsed, Time);
 
@@ -80,6 +104,8 @@
             OnUpdate?.Invoke(Value);
 
             Finished = (interpolationFactor >= 1);
+            if (Finished)
+                OnFinished?.Invoke(Value);
         }
     }
 }

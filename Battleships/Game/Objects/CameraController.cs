@@ -1,8 +1,9 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Math;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
+using Battleships.Framework.Tweening;
 using Battleships.Game.Data;
-using Raylib_cs;
 
 namespace Battleships.Game.Objects
 {
@@ -14,7 +15,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// How many units a second are we moving?
         /// </summary>
-        const float MOVEMENT_SPEED = 5f;
+        const float MOVEMENT_SPEED = 1f;
 
         /// <summary>
         /// The current objective the controller is following.
@@ -31,11 +32,49 @@ namespace Battleships.Game.Objects
         /// </summary>
         private GameCoordinator? _coordinator;
 
+        /// <summary>
+        /// The mover tween.
+        /// </summary>
+        private Tween<Vector3>? _moverTween;
+
         /// <inheritdoc/>
         public override void Start()
         {
             _camera = GetGameObjectFromGame<Camera>();
             _coordinator = GetGameObjectFromGame<GameCoordinator>();
+        }
+
+        /// <summary>
+        /// Constructs a mover tween from the camera's position to newPosition.
+        /// </summary>
+        /// <param name="newPosition">The new position.</param>
+        private void ConstructMoverTween(Vector3 newPosition)
+        {
+            _moverTween?.Kill();
+
+            _moverTween = new Tween<Vector3>(
+                _camera!.Target,
+                newPosition,
+                MOVEMENT_SPEED,
+                TimeEasing.Linear,
+                (a, b, t) =>
+                {
+                    return a.LinearInterpolation(b, t);
+                },
+                position =>
+                {
+                    _camera!.SnapTo(position);
+                },
+                fin =>
+                {
+                    _camera!.SnapTo(fin);
+                    _moverTween = null;
+
+                    Objective = CameraObjective.Idle;
+                });
+
+            GetGameObjectFromGame<TweenEngine>()!
+                .AddTween(_moverTween);
         }
 
         /// <inheritdoc/>
@@ -49,14 +88,17 @@ namespace Battleships.Game.Objects
             if (Peer?.PeerId == null)
                 return;
 
-            var ourId = Peer!.PeerId.Value;
-            var targetId = Objective == CameraObjective.MoveToSelf ?
-                ourId :
-                (ourId + 1) % 2;
+            if (_moverTween == null)
+            {
+                var ourId = Peer!.PeerId.Value;
+                var targetId = Objective == CameraObjective.MoveToSelf ?
+                    ourId :
+                    (ourId + 1) % 2;
 
-            var target = _coordinator!.GetPlayfieldForPlayer(targetId);
-            _camera!.SnapTo(target!.Position);
-            Objective = CameraObjective.Idle;
+                var target = _coordinator!.GetPlayfieldForPlayer(targetId);
+
+                ConstructMoverTween(target!.Position);
+            }
         }
     }
 }
