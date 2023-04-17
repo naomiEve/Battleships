@@ -2,6 +2,7 @@
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
+using Battleships.Framework.Tweening;
 using Raylib_cs;
 
 namespace Battleships.Framework
@@ -60,6 +61,8 @@ namespace Battleships.Framework
 
             _gameObjects = new List<GameObject>();
             AssetDatabase = new AssetDatabase();
+
+            AddGameObject<TweenEngine>();
         }
 
         /// <summary>
