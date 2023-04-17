@@ -12,12 +12,28 @@ namespace Battleships.Framework.Assets
         /// </summary>
         private Music? _music;
 
+        /// <summary>
+        /// Is this asset playing?
+        /// </summary>
+        public bool IsPlaying { get; private set; } = false;
+
         /// <inheritdoc/>
         public override void LoadFromFile(string path)
         {
             Path = path;
 
             _music = Raylib.LoadMusicStream(path);
+        }
+
+        /// <summary>
+        /// Updates the music stream.
+        /// </summary>
+        public void UpdateStream()
+        {
+            if (_music == null)
+                return;
+
+            Raylib.UpdateMusicStream(_music.Value);
         }
 
         /// <summary>
@@ -29,6 +45,7 @@ namespace Battleships.Framework.Assets
                 return;
 
             Raylib.PlayMusicStream(_music.Value);
+            IsPlaying = true;
         }
 
         /// <summary>
@@ -40,6 +57,7 @@ namespace Battleships.Framework.Assets
                 return;
 
             Raylib.PauseMusicStream(_music.Value);
+            IsPlaying = false;
         }
 
         /// <summary>
@@ -51,6 +69,7 @@ namespace Battleships.Framework.Assets
                 return;
 
             Raylib.StopMusicStream(_music.Value);
+            IsPlaying = false;
         }
     }
 }

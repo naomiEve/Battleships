@@ -53,5 +53,12 @@ namespace Battleships.Game.Objects
 
             _ambientNoiseList.Add(noise);
         }
+
+        /// <inheritdoc/>
+        public override void Update(float dt)
+        {
+            if (CurrentMusic?.IsPlaying == true)
+                CurrentMusic?.UpdateStream();
+        }
     }
 }
