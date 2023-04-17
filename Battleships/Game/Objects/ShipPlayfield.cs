@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
+using Battleships.Game.Data;
 using Battleships.Game.Messages;
 using Raylib_cs;
 
@@ -34,6 +35,11 @@ namespace Battleships.Game.Objects
         /// The game coordinator.
         /// </summary>
         private GameCoordinator? _coordinator;
+
+        /// <summary>
+        /// The camera.
+        /// </summary>
+        private CameraController? _camera;
 
         /// <summary>
         /// The owner of this playfield.
@@ -289,16 +295,19 @@ namespace Battleships.Game.Objects
             _shipPreview.Length = 4;
 
             _coordinator = GetGameObjectFromGame<GameCoordinator>();
+            _camera = GetGameObjectFromGame<CameraController>();
         }
 
         /// <inheritdoc/>
         public override void Update(float dt)
         {
             _shipPreview!.Enabled = Owner == Peer!.PeerId &&
-                _coordinator?.State == Data.GameState.ShipBuilding;
+                _coordinator?.State == GameState.ShipBuilding &&
+                _camera?.Objective == CameraObjective.Idle;
 
             BombPreview!.Enabled = Owner != Peer!.PeerId &&
-                _coordinator?.State == Data.GameState.PlayerBombing;
+                _coordinator?.State == GameState.PlayerBombing &&
+                _camera?.Objective == CameraObjective.Idle;
         }
 
         /// <inheritdoc/>

@@ -57,14 +57,8 @@ namespace Battleships.Game.Objects
                 newPosition,
                 MOVEMENT_SPEED,
                 TimeEasing.OutCubic,
-                (a, b, t) =>
-                {
-                    return a.LinearInterpolation(b, t);
-                },
-                position =>
-                {
-                    _camera!.SnapTo(position);
-                },
+                (a, b, t) => a.LinearInterpolation(b, t),
+                position => _camera!.SnapTo(position),
                 fin =>
                 {
                     _camera!.SnapTo(fin);

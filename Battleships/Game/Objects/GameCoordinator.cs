@@ -95,6 +95,8 @@ namespace Battleships.Game.Objects
                 SetGameOver(gameOverMesg.winner, false);
             });
 
+            _camera = ThisGame!.AddGameObject<CameraController>();
+
             // Construct the playfields
             var player1Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
             var player2Playfield = ThisGame!.AddGameObject<ShipPlayfield>();
@@ -104,8 +106,6 @@ namespace Battleships.Game.Objects
 
             SetPlayfieldForPlayer(0, player1Playfield);
             SetPlayfieldForPlayer(1, player2Playfield);
-
-            _camera = ThisGame.AddGameObject<CameraController>();
 
             SetState(GameState.ShipBuilding);
         }
@@ -260,6 +260,7 @@ namespace Battleships.Game.Objects
         public void DrawUI()
         {
             Raylib.DrawText($"Current state: {State}.", 0, 0, 20, Color.BLACK);
+            Raylib.DrawText($"Current camera objective: {_camera!.Objective}", 0, 25, 20, Color.BLACK);
         }
     }
 }

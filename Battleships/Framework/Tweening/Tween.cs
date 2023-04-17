@@ -89,6 +89,7 @@
         {
             Value = EndValue;
             Finished = true;
+            OnFinished?.Invoke(Value);
         }
 
         /// <inheritdoc/>
