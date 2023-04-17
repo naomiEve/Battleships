@@ -74,7 +74,12 @@ namespace Battleships.Game.Objects
 
                 // We've hit, continue bombing.
                 if (resultMesg.hit)
+                {
                     SetState(GameState.PlayerBombing);
+
+                    var field = _playfields![resultMesg.field];
+                    field.SpawnExplosionAt(new Vector2Int(resultMesg.x, resultMesg.y));
+                }
             });
 
             Peer?.MessageRegistry.RegisterMessage<FieldClearedMessage>(mesg =>

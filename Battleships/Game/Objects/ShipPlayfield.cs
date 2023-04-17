@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
@@ -96,7 +98,10 @@ namespace Battleships.Game.Objects
             {
                 Peer?.Send(new BombingResultMessage
                 {
-                    hit = false
+                    hit = false,
+                    x = position.X,
+                    y = position.Y,
+                    field = Owner
                 }, passLockstep: false);
 
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
@@ -108,7 +113,10 @@ namespace Battleships.Game.Objects
             {
                 Peer?.Send(new BombingResultMessage
                 {
-                    hit = false
+                    hit = false,
+                    x = position.X,
+                    y = position.Y,
+                    field = Owner
                 }, passLockstep: false);
                 
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
@@ -119,7 +127,10 @@ namespace Battleships.Game.Objects
             {
                 Peer?.Send(new BombingResultMessage
                 {
-                    hit = false
+                    hit = false,
+                    x = position.X,
+                    y = position.Y,
+                    field = Owner
                 }, passLockstep: false);
 
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
@@ -132,7 +143,10 @@ namespace Battleships.Game.Objects
 
             Peer?.Send(new BombingResultMessage
             {
-                hit = true
+                hit = true,
+                x = position.X,
+                y = position.Y,
+                field = Owner
             }, passLockstep: unsunk > 0);
 
             // If we have no more afloat pieces, send the field cleared message.
@@ -143,6 +157,19 @@ namespace Battleships.Game.Objects
                     id = Peer!.PeerId!.Value
                 });
             }
+        }
+
+        /// <summary>
+        /// Spawns an explosion particle effect at a given position.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        public void SpawnExplosionAt(Vector2Int position)
+        {
+            ThisGame!.AddGameObject<ParticleEffect>()
+                .WithPosition(FieldCoordinatesToPosition(position))
+                .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("explosion_atlas")!)
+                .WithDuration(2f)
+                .Fire();
         }
 
         /// <summary>
@@ -273,6 +300,19 @@ namespace Battleships.Game.Objects
                 return null;
 
             return new Vector2Int(x, y);
+        }
+
+        /// <summary>
+        /// Transforms field coordinates to a position in the world.
+        /// </summary>
+        /// <param name="field">The field coordinates.</param>
+        /// <returns>The position within the world.</returns>
+        public Vector3 FieldCoordinatesToPosition(Vector2Int field)
+        {
+            var x = field.X - 5;
+            var y = field.Y - 5;
+
+            return new Vector3(x + 0.5f, 0f, y + 0.5f) + Position;
         }
 
         /// <summary>

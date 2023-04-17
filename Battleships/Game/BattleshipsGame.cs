@@ -46,6 +46,9 @@ namespace Battleships.Game
             AssetDatabase.Load<MusicAsset>("waves", "./assets/waves.ogg");
             AssetDatabase.Load<TextureAsset>("crosshair", "./assets/crosshair.png");
 
+            var explosion_atlas = AssetDatabase.Load<TextureAsset>("explosion_atlas", "./assets/explosion_atlas.png");
+            explosion_atlas.MakeAtlas(new Vector2Int(4, 4), 16);
+
             var quad = AssetDatabase.Load<ModelAsset>("quad", "./assets/quad.obj");
             quad.Materials![0]
                 .SetTexture(MaterialMapIndex.MATERIAL_MAP_ALBEDO, AssetDatabase.Get<TextureAsset>("crosshair")!);

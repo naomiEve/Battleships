@@ -9,15 +9,23 @@ namespace Battleships.Game.Messages
     internal struct BombingResultMessage : INetworkMessage
     {
         public bool hit;
+        public int x, y;
+        public int field;
 
         public void Deserialize(ref NetworkReader reader)
         {
-            hit = reader.Read<bool>(); 
+            hit = reader.Read<bool>();
+            x = reader.Read<int>();
+            y = reader.Read<int>();
+            field = reader.Read<int>();
         }
 
         public void Serialize(ref NetworkWriter writer)
         {
             writer.Write(hit);
+            writer.Write(x);
+            writer.Write(y);
+            writer.Write(field);
         }
     }
 }

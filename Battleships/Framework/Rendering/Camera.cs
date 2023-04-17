@@ -57,6 +57,11 @@ namespace Battleships.Framework.Rendering
         public Vector3 Target => _camera.target;
 
         /// <summary>
+        /// The backing camera.
+        /// </summary>
+        public Camera3D BackingCamera => _camera;
+
+        /// <summary>
         /// Construct a new camera.
         /// </summary>
         public Camera()
