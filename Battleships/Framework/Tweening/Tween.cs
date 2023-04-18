@@ -112,7 +112,7 @@
             Value = Incrementer!(BeginningValue!, EndValue!, interpolationFactor);
             OnUpdate?.Invoke(Value);
 
-            Finished = (interpolationFactor >= 1);
+            Finished = (_elapsed >= Time);
             if (Finished)
                 OnFinished?.Invoke(Value);
         }
