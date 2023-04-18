@@ -1,10 +1,9 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics;
 using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
+using Battleships.Framework.Math;
 using Battleships.Framework.Objects;
-using Battleships.Framework.Rendering;
+using Battleships.Framework.Tweening;
 using Battleships.Game.Data;
 using Battleships.Game.Messages;
 using Raylib_cs;
@@ -138,6 +137,7 @@ namespace Battleships.Game.Objects
             }
 
             part.Sink();
+            SpawnExplosionAt(position);
 
             var unsunk = GetUnsunkPieces();
 
@@ -170,6 +170,10 @@ namespace Battleships.Game.Objects
                 .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("explosion_atlas")!)
                 .WithDuration(2f)
                 .Fire();
+
+            ThisGame!.AssetDatabase
+                .Get<SoundAsset>("explosion")?
+                .Play();
         }
 
         /// <summary>
@@ -200,7 +204,19 @@ namespace Battleships.Game.Objects
 
             var part = ThisGame!.AddGameObject<ShipPart>();
             part.Ship = parent;
-            part.Position = new Vector3(Position.X + x - 5 + 0.5f, 0.5f, Position.Y + y - 5 + 0.5f);
+
+            var begin = new Vector3(Position.X + x - 5 + 0.5f, 5f, Position.Y + y - 5 + 0.5f);
+            var end = new Vector3(Position.X + x - 5 + 0.5f, 0.5f, Position.Y + y - 5 + 0.5f);
+
+            new Tween<Vector3>()
+                .WithBeginningValue(begin)
+                .WithEndingValue(end)
+                .WithEasing(TimeEasing.OutElastic)
+                .WithTime(1f)
+                .WithIncrementer((a, b, t) => a.LinearInterpolation(b, t))
+                .WithUpdateCallback(pos => part.Position = pos)
+                .WithFinishedCallback(fin => part.Position = fin)
+                .BindTo(ThisGame!.GetGameObjectOfType<TweenEngine>()!);
 
             _field[x, y] = part;
             return part;

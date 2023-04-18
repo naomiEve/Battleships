@@ -84,9 +84,6 @@ namespace Battleships.Game.Objects
                 return;
 
             Sunk = true;
-            ThisGame!.AssetDatabase
-                .Get<SoundAsset>("explosion")?
-                .Play();
         }
 
         /// <inheritdoc/>
