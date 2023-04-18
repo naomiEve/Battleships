@@ -6,6 +6,7 @@
     internal enum TimeEasing
     {
         Linear,
-        OutCubic
+        OutCubic,
+        OutElastic
     }
 }
