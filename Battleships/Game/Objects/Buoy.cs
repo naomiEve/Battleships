@@ -43,7 +43,7 @@ internal class Buoy : GameObject,
         Raylib.DrawModelEx(
             Model!.Model, 
             Position, 
-            Vector3.UnitX, 
+            Vector3.UnitX + Vector3.UnitZ, 
             MathF.Sin((float)(Raylib.GetTime() - _beginningTime) * 3f) * 10f,
             new Vector3(0.3f), 
             Color.WHITE

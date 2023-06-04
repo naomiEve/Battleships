@@ -173,7 +173,7 @@ namespace Battleships.Game.Objects
             ThisGame!.AddGameObject<ParticleEffect>()
                 .WithPosition(FieldCoordinatesToPosition(position))
                 .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("fire_atlas")!)
-                .WithDuration(0.7f)
+                .WithDuration(1f)
                 .WithLooping(true)
                 .Following(_field[position.X, position.Y], new Vector3(0, 0.4f, 0))
                 .Fire();

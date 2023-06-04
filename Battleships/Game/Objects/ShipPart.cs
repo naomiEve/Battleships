@@ -107,10 +107,18 @@ namespace Battleships.Game.Objects
                 return;
             }
 
+            var pos = Position;
+            
             if (Ship!.ShipFacing == Ship.Facing.Right)
-                Raylib.DrawModelEx(_model.Model, Position, Vector3.UnitY, 90f, new Vector3(0.5f), Color.WHITE);
+            {
+                pos.X -= 0.5f;
+                Raylib.DrawModelEx(_model.Model, pos, Vector3.UnitY, 90f, new Vector3(0.5f), Color.WHITE);
+            }
             else
-                Raylib.DrawModel(_model.Model, Position, 0.5f, Color.WHITE);
+            {
+                pos.Z -= 0.5f;
+                Raylib.DrawModel(_model.Model, pos, 0.5f, Color.WHITE);
+            }
         }
     }
 }
