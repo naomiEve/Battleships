@@ -11,7 +11,8 @@ namespace Battleships.Game.Objects
     /// A simplistic particle effect.
     /// </summary>
     internal partial class ParticleEffect : GameObject,
-        IDrawableGameObject
+        IDrawableGameObject,
+        IPositionedObject
     {
         /// <summary>
         /// The atlas sheet associated with this particle effect.
@@ -32,6 +33,21 @@ namespace Battleships.Game.Objects
         /// The position.
         /// </summary>
         public Vector3 Position { get; private set; }
+
+        /// <summary>
+        /// Is this particle effect looping?
+        /// </summary>
+        public bool Looping { get; private set; } = false;
+
+        /// <summary>
+        /// Followed object.
+        /// </summary>
+        public IPositionedObject? FollowedObject { get; private set; }
+
+        /// <summary>
+        /// The offset from the followed object.
+        /// </summary>
+        public Vector3 FollowedObjectOffset { get; private set; }
 
         /// <summary>
         /// The camera.
@@ -60,10 +76,18 @@ namespace Battleships.Game.Objects
             if (!Playing)
                 return;
 
+            if (FollowedObject is not null)
+                Position = FollowedObject.Position + FollowedObjectOffset;
+
             _elapsed += dt;
 
             if (_elapsed > Duration)
-                Playing = false;
+            {
+                if (!Looping)
+                    Playing = false;
+                else
+                    _elapsed = 0f;
+            }
         }
 
         /// <inheritdoc/>
@@ -81,7 +105,6 @@ namespace Battleships.Game.Objects
             if (rect == null)
                 return;
 
-            Console.WriteLine($"index={index}, elapsed={_elapsed}, duration={Duration}");
             Raylib.DrawBillboardRec(_camera!.BackingCamera, Atlas.Texture!.Value, rect.Value, Position, new Vector2(1f, 2f), Color.WHITE);
         }
     }

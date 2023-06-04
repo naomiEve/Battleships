@@ -1,4 +1,4 @@
-﻿using Battleships.Framework.Rendering.Shaders;
+﻿using Battleships.Framework.Rendering.ShaderPasses;
 
 namespace Battleships.Game.Shaders
 {

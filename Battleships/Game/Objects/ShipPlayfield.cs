@@ -90,7 +90,7 @@ namespace Battleships.Game.Objects
         /// Tries to bomb a field at the given coordinates.
         /// </summary>
         /// <param name="position">The position.</param>
-        public void TryBombField(Vector2Int position)
+        public async void TryBombField(Vector2Int position)
         {
             if (position.X < 0 || position.X >= FIELD_SIZE ||
                 position.Y < 0 || position.Y >= FIELD_SIZE)
@@ -110,6 +110,8 @@ namespace Battleships.Game.Objects
             var part = _field[position.X, position.Y];
             if (part == null)
             {
+                SpawnBuoyAt(position);
+
                 Peer?.Send(new BombingResultMessage
                 {
                     hit = false,
@@ -117,7 +119,10 @@ namespace Battleships.Game.Objects
                     y = position.Y,
                     field = Owner
                 }, passLockstep: false);
-                
+
+                // Wait a while before we move the fields again, so we can display the particle effect.
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
             }
@@ -137,7 +142,7 @@ namespace Battleships.Game.Objects
             }
 
             part.Sink();
-            SpawnExplosionAt(position);
+            SpawnFireAt(position);
 
             var unsunk = GetUnsunkPieces();
 
@@ -163,17 +168,48 @@ namespace Battleships.Game.Objects
         /// Spawns an explosion particle effect at a given position.
         /// </summary>
         /// <param name="position">The position.</param>
-        public void SpawnExplosionAt(Vector2Int position)
+        public void SpawnFireAt(Vector2Int position)
         {
             ThisGame!.AddGameObject<ParticleEffect>()
                 .WithPosition(FieldCoordinatesToPosition(position))
-                .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("explosion_atlas")!)
-                .WithDuration(2f)
+                .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("fire_atlas")!)
+                .WithDuration(0.7f)
+                .WithLooping(true)
+                .Following(_field[position.X, position.Y], new Vector3(0, 0.4f, 0))
                 .Fire();
 
             ThisGame!.AssetDatabase
                 .Get<SoundAsset>("explosion")?
                 .Play();
+        }
+
+        /// <summary>
+        /// Spawns a water splash at a position.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        public void SpawnSplashAt(Vector2Int position)
+        {
+            ThisGame!.AddGameObject<ParticleEffect>()
+                .WithPosition(FieldCoordinatesToPosition(position))
+                .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("splash_atlas")!)
+                .WithDuration(0.3f)
+                .Fire();
+
+            ThisGame!
+                .AssetDatabase.Get<SoundAsset>("splash")!
+                .Play();
+        }
+
+        /// <summary>
+        /// Spawns a buoy (and a splash) at a position.
+        /// </summary>
+        /// <param name="position"></param>
+        public void SpawnBuoyAt(Vector2Int position)
+        {
+            ThisGame!.AddGameObject<Buoy>()
+                .Position = FieldCoordinatesToPosition(position);
+
+            SpawnSplashAt(position);
         }
 
         /// <summary>
@@ -207,15 +243,25 @@ namespace Battleships.Game.Objects
 
             var begin = new Vector3(Position.X + x - 5 + 0.5f, 5f, Position.Y + y - 5 + 0.5f);
             var end = new Vector3(Position.X + x - 5 + 0.5f, 0.5f, Position.Y + y - 5 + 0.5f);
+            var playedSound = false;
 
             new Tween<Vector3>()
                 .WithBeginningValue(begin)
                 .WithEndingValue(end)
                 .WithEasing(TimeEasing.OutElastic)
                 .WithTime(1f)
-                .WithIncrementer((a, b, t) => a.LinearInterpolation(b, t))
-                .WithUpdateCallback(pos => part.Position = pos)
-                .WithFinishedCallback(fin => part.Position = fin)
+                .WithIncrementer((a, b, t) =>
+                {
+                    if (t >= 1 && !playedSound)
+                    {
+                        SpawnSplashAt(new Vector2Int(x, y));
+                        playedSound = true;
+                    }
+
+                    return a.LinearInterpolation(b, t);
+                })
+                .WithUpdateCallback(pos => part.InitialPosition = pos)
+                .WithFinishedCallback(fin => part.InitialPosition = fin)
                 .BindTo(ThisGame!.GetGameObjectOfType<TweenEngine>()!);
 
             _field[x, y] = part;
@@ -369,10 +415,12 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public void Draw()
         {
-            var spacing = 1f;
-            var halfSlices = 5;
+            const float spacing = 1f;
+            const int halfSlices = 5;
 
             Rlgl.rlBegin(DrawMode.LINES);
+            Rlgl.rlSetLineWidth(3f);
+
             for (var i = -halfSlices; i <= halfSlices; i++)
             {
                 Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
@@ -386,6 +434,7 @@ namespace Battleships.Game.Objects
                 Rlgl.rlVertex3f(Position.X + -halfSlices * spacing, Position.Y, Position.Z + i * spacing);
                 Rlgl.rlVertex3f(Position.X + halfSlices * spacing, Position.Y, Position.Z + i * spacing);
             }
+
             Rlgl.rlEnd();
         }
 

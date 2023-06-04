@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Assets;
+using Battleships.Framework.Objects;
 
 namespace Battleships.Game.Objects
 {
@@ -32,6 +33,27 @@ namespace Battleships.Game.Objects
         public ParticleEffect WithPosition(Vector3 position)
         {
             Position = position;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the looping of this particle effect.
+        /// </summary>
+        /// <param name="looping">Should it be looping?</param>
+        public ParticleEffect WithLooping(bool looping)
+        {
+            Looping = looping;
+            return this;
+        }
+
+        /// <summary>
+        /// Makes this particle effect follow an object.
+        /// </summary>
+        /// <param name="object">The object.</param>
+        public ParticleEffect Following(IPositionedObject @object, Vector3 offset)
+        {
+            FollowedObject = @object;
+            FollowedObjectOffset = offset;
             return this;
         }
 

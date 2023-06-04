@@ -9,7 +9,8 @@ namespace Battleships.Game.Objects
     /// A part of a battleship.
     /// </summary>
     internal class ShipPart : GameObject,
-        IDrawableGameObject
+        IDrawableGameObject,
+        IPositionedObject
     {
         /// <summary>
         /// The type of the ship part.
@@ -25,6 +26,11 @@ namespace Battleships.Game.Objects
         /// The ship part's position.
         /// </summary>
         public Vector3 Position { get; set; }
+
+        /// <summary>
+        /// The initial position of this ship part.
+        /// </summary>
+        public Vector3 InitialPosition { get; set; }
 
         /// <summary>
         /// The type of this ship part.
@@ -87,23 +93,24 @@ namespace Battleships.Game.Objects
         }
 
         /// <inheritdoc/>
+        public override void Update(float dt)
+        {
+            Position = InitialPosition + new Vector3(0f, 0.2f, 0f) * BobOffset;
+        }
+
+        /// <inheritdoc/>
         public void Draw()
         {
-            if (Sunk)
-                return;
-
             if (_model == null)
             {
                 Raylib.DrawCube(Position, 1f, 1f, 1f, Color.RED);
                 return;
             }
 
-            var pos = Position + new Vector3(0f, 0.2f, 0f) * BobOffset;
-
             if (Ship!.ShipFacing == Ship.Facing.Right)
-                Raylib.DrawModelEx(_model.Model, pos, Vector3.UnitY, 90f, new Vector3(0.5f), Color.RED);
+                Raylib.DrawModelEx(_model.Model, Position, Vector3.UnitY, 90f, new Vector3(0.5f), Color.WHITE);
             else
-                Raylib.DrawModel(_model.Model, pos, 0.5f, Color.YELLOW);
+                Raylib.DrawModel(_model.Model, Position, 0.5f, Color.WHITE);
         }
     }
 }

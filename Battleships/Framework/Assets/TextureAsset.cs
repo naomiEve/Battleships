@@ -33,6 +33,9 @@ namespace Battleships.Framework.Assets
         {
             Path = path;
             Texture = Raylib.LoadTexture(path);
+
+            Raylib.SetTextureWrap(Texture!.Value, TextureWrap.TEXTURE_WRAP_REPEAT);
+            Raylib.SetTextureFilter(Texture!.Value, TextureFilter.TEXTURE_FILTER_TRILINEAR);
         }
 
         /// <summary>

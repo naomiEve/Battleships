@@ -44,5 +44,21 @@ namespace Battleships.Framework.Rendering
                 asset.Texture.Value
             );
         }
+
+        /// <summary>
+        /// Set a shader for this model.
+        /// </summary>
+        /// <param name="shader">The shader.</param>
+        public unsafe void SetShader(ShaderAsset shader)
+        {
+            if (shader?.Shader == null)
+                return;
+
+            Raylib.SetMaterialShader(
+                ref Model.AsRef(),
+                Index,
+                ref shader.AsRef()
+            );
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Objects;
-using Battleships.Framework.Rendering.Shaders;
+using Battleships.Framework.Rendering.ShaderPasses;
 using Raylib_cs;
 
 namespace Battleships.Framework.Rendering
@@ -197,7 +197,7 @@ namespace Battleships.Framework.Rendering
 
             Move(new Vector3(l.X / 2f, 0f, l2.X / 2f));
 
-            Console.WriteLine($"Should snap to: {target}, actual target: {Target}");
+            //Console.WriteLine($"Should snap to: {target}, actual target: {Target}");
         }
 
         /// <summary>
@@ -317,6 +317,7 @@ namespace Battleships.Framework.Rendering
             Raylib.BeginTextureMode(_backingTexture);
 
             Raylib.BeginMode3D(_camera);
+            Rlgl.rlEnableDepthTest();
             Raylib.ClearBackground(Color.WHITE);
         }
 

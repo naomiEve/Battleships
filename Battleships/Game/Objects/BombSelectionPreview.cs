@@ -10,17 +10,18 @@ namespace Battleships.Game.Objects
     /// The preview for the spot we're going to be bombing on.
     /// </summary>
     internal class BombSelectionPreview : GameObject,
-        IDrawableGameObject
+        IDrawableGameObject,
+        IPositionedObject
     {
         /// <summary>
         /// The speed at which the size changes.
         /// </summary>
-        const double SIZE_CHANGE_SPEED = 0.2f;
+        const double SIZE_CHANGE_SPEED = 0.8f;
 
         /// <summary>
         /// The rotation speed of the crosshair.
         /// </summary>
-        const double ROTATION_SPEED = 10f;
+        const double ROTATION_SPEED = 30f;
 
         /// <summary>
         /// The playfield this selection is tied to.
@@ -57,14 +58,18 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public override void Update(float dt)
         {
-            var collision = ThisGame!.CastRay(_camera!.MouseRay(Raylib.GetMousePosition()));
+            var collision = ThisGame!
+                .CastRay(_camera!.MouseRay(Raylib.GetMousePosition()));
+
             if (collision == null)
             {
                 _hit = false;
                 return;
             }
 
-            var point = Playfield!.PositionToFieldCoordinates(collision.Value.point);
+            var point = Playfield!
+                .PositionToFieldCoordinates(collision.Value.point);
+
             if (point == null)
             {
                 _hit = false;
@@ -95,7 +100,7 @@ namespace Battleships.Game.Objects
             var sin = MathF.Abs(MathF.Sin(t));
             var scale = 0.3f + (0.2f * sin);
 
-            Raylib.DrawModelEx(_crosshair!.Model, Position, Vector3.UnitY, r, new Vector3(scale, 1f, scale), new Color(255, 255, 255, 128));
+            Raylib.DrawModelEx(_crosshair!.Model, Position, Vector3.UnitY, r, new Vector3(scale, 1f, scale), Color.WHITE);
         }
     }
 }

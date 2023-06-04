@@ -1,16 +1,10 @@
-﻿using Battleships.Framework.Rendering.ShaderPasses;
-
-namespace Battleships.Game.ShaderPasses
+﻿namespace Battleships.Framework.Rendering.ShaderPasses;
+internal class BloomShaderPass : ShaderPass
 {
     /// <summary>
-    /// A pixelization shader.
+    /// The source code for this shader pass.
     /// </summary>
-    internal class PixelizationShaderPass : ShaderPass
-    {
-        /// <summary>
-        /// The source code for this shader pass.
-        /// </summary>
-        private const string FRAGMENT = @"
+    private const string FRAGMENT = @"
 #version 330
 
 // Input vertex attributes (from vertex shader)
@@ -30,8 +24,8 @@ out vec4 finalColor;
 const float renderWidth = 640;
 const float renderHeight = 480;
 
-uniform float pixelWidth = 2.0;
-uniform float pixelHeight = 2.0;
+uniform float pixelWidth = 5.0;
+uniform float pixelHeight = 5.0;
 
 void main()
 {
@@ -46,13 +40,12 @@ void main()
 }
 ";
 
-        /// <summary>
-        /// Constructs a new pixelization shader pass.
-        /// </summary>
-        public PixelizationShaderPass()
-            : base(null, FRAGMENT)
-        {
+    /// <summary>
+    /// Constructs a new bloom shader pass.
+    /// </summary>
+    public BloomShaderPass()
+        : base(null, FRAGMENT)
+    {
 
-        }
     }
 }

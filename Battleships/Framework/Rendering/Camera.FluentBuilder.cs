@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using Battleships.Framework.Rendering.Shaders;
+using Battleships.Framework.Rendering.ShaderPasses;
 using Raylib_cs;
 
 namespace Battleships.Framework.Rendering

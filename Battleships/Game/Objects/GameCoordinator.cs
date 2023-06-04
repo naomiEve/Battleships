@@ -4,6 +4,7 @@ using Battleships.Framework.Networking;
 using Battleships.Framework.Objects;
 using Battleships.Game.Data;
 using Battleships.Game.Messages;
+using CommandLine;
 
 namespace Battleships.Game.Objects
 {
@@ -71,14 +72,19 @@ namespace Battleships.Game.Objects
             Peer?.MessageRegistry.RegisterMessage<BombingResultMessage>(mesg =>
             {
                 var resultMesg = (BombingResultMessage)mesg;
+                var field = _playfields![resultMesg.field];
+                var pos = new Vector2Int(resultMesg.x, resultMesg.y);
 
                 // We've hit, continue bombing.
                 if (resultMesg.hit)
                 {
                     SetState(GameState.PlayerBombing);
 
-                    var field = _playfields![resultMesg.field];
-                    field.SpawnExplosionAt(new Vector2Int(resultMesg.x, resultMesg.y));
+                    field.SpawnFireAt(pos);
+                }
+                else
+                {
+                    field.SpawnBuoyAt(pos);
                 }
             });
 
