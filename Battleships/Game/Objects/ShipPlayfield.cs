@@ -232,7 +232,8 @@ namespace Battleships.Game.Objects
         /// Spawns a water splash at a position.
         /// </summary>
         /// <param name="position">The position.</param>
-        public void SpawnSplashAt(Vector2Int position)
+        /// <param name="playSound">Should we play the sound?</param>
+        public void SpawnSplashAt(Vector2Int position, bool playSound = true)
         {
             ThisGame!.AddGameObject<ParticleEffect>()
                 .WithPosition(FieldCoordinatesToPosition(position))
@@ -240,16 +241,20 @@ namespace Battleships.Game.Objects
                 .WithDuration(0.3f)
                 .Fire();
 
-            ThisGame!
-                .AssetDatabase.Get<SoundAsset>("splash")!
-                .Play();
+            if (playSound)
+            {
+                ThisGame!
+                    .AssetDatabase.Get<SoundAsset>("splash")!
+                    .Play();
+            }
         }
 
         /// <summary>
         /// Spawns a buoy (and a splash) at a position.
         /// </summary>
-        /// <param name="position"></param>
-        public void SpawnBuoyAt(Vector2Int position)
+        /// <param name="position">The position to spawn at.</param>
+        /// <param name="playSound">Should we play the splash sound?</param>
+        public void SpawnBuoyAt(Vector2Int position, bool playSound = true)
         {
             if (HasBuoyAt(position))
                 return;
@@ -272,7 +277,7 @@ namespace Battleships.Game.Objects
                 {
                     if (t >= 1 && !playedSound)
                     {
-                        SpawnSplashAt(position);
+                        SpawnSplashAt(position, playSound);
                         playedSound = true;
                     }
 
@@ -500,7 +505,7 @@ namespace Battleships.Game.Objects
 
                     Console.WriteLine($"[x:{x}, y:{y}]");
 
-                    SpawnBuoyAt(new(x, y));
+                    SpawnBuoyAt(new(x, y), (x == min.X && y == min.Y));
                 }
             }
         }
