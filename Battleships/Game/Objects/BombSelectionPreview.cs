@@ -76,6 +76,12 @@ namespace Battleships.Game.Objects
                 return;
             }
 
+            if (Playfield!.HasBuoyAt(point!.Value))
+            {
+                _hit = false;
+                return;
+            }
+
             var floorPoint = collision.Value.point;
             floorPoint.X = MathF.Floor(floorPoint.X) + 0.5f;
             floorPoint.Z = MathF.Floor(floorPoint.Z) + 0.5f;

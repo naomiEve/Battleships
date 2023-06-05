@@ -5,7 +5,6 @@ using Battleships.Framework.Data;
 using Battleships.Framework.Rendering;
 using Battleships.Game.Objects;
 using Battleships.Game.ShaderPasses;
-using Battleships.Game.Shaders;
 using Raylib_cs;
 
 namespace Battleships.Game
@@ -129,7 +128,7 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
-            AddGameObject<DebugObject>();
+            //AddGameObject<DebugObject>();
         }
     }
 }

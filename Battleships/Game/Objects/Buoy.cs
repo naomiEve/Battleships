@@ -31,7 +31,7 @@ internal class Buoy : GameObject,
         Model = ThisGame!
             .AssetDatabase.Get<ModelAsset>("buoy");
 
-        _beginningTime = (float)Raylib.GetTime();
+        _beginningTime = (float)Raylib.GetTime() + (Random.Shared.NextSingle() * 10f);
     }
 
     /// <inheritdoc/>

@@ -4,7 +4,6 @@ using Battleships.Framework.Networking;
 using Battleships.Framework.Objects;
 using Battleships.Game.Data;
 using Battleships.Game.Messages;
-using CommandLine;
 
 namespace Battleships.Game.Objects
 {
@@ -103,6 +102,14 @@ namespace Battleships.Game.Objects
                 SetGameOver(gameOverMesg.winner, false);
             });
 
+            Peer?.MessageRegistry.RegisterMessage<ShipSunkMessage>(mesg =>
+            {
+                var shipSunkMesg = (ShipSunkMessage)mesg;
+                var field = _playfields![shipSunkMesg.playfield];
+
+                field.SurroundSunkShipWithBuoys(new(shipSunkMesg.x, shipSunkMesg.y), shipSunkMesg.facing, shipSunkMesg.length);
+            });
+
             _camera = ThisGame!.AddGameObject<CameraController>();
 
             // Construct the playfields
@@ -119,7 +126,7 @@ namespace Battleships.Game.Objects
 
             // Wait a bit for the game to stabilize before displaying the announcement.
             // Otherwise we'd get a bogus dt in the TweenEngine update.
-            await Task.Delay(1000);
+            await Task.Delay(100);
             GetGameObjectFromGame<AnnouncementController>()!
                 .DisplayAnnouncement(AnnouncementController.AnnouncementType.BuildYourFleet);
         }
@@ -133,7 +140,6 @@ namespace Battleships.Game.Objects
                 return;
 
             var count = _playfields!.Count(field => field.FinishedBuilding);
-            Console.WriteLine(count);
 
             // If everyone finished building, commence the next part.
             if (count == _playfields!.Length)
@@ -233,8 +239,8 @@ namespace Battleships.Game.Objects
         public void SetGameOver(int winner, bool sendMessage)
         {
             SetState(GameState.GameOver);
-            var gameOver = ThisGame!.AddGameObject<GameOverText>();
-            gameOver.Winner = winner;
+            GetGameObjectFromGame<AnnouncementController>()!
+                .DisplayAnnouncement(winner == 1 ? AnnouncementController.AnnouncementType.Player1Won : AnnouncementController.AnnouncementType.Player2Won);
 
             if (sendMessage)
             {

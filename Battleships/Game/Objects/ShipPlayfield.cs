@@ -28,6 +28,11 @@ namespace Battleships.Game.Objects
         private readonly ShipPart[,] _field;
 
         /// <summary>
+        /// The field containing buoys.
+        /// </summary>
+        private readonly Buoy[,] _buoyField;
+
+        /// <summary>
         /// The preview cube.
         /// </summary>
         private ShipBuilderPreview? _shipPreview;
@@ -68,6 +73,7 @@ namespace Battleships.Game.Objects
         public ShipPlayfield()
         {
             _field = new ShipPart[FIELD_SIZE, FIELD_SIZE];
+            _buoyField = new Buoy[FIELD_SIZE, FIELD_SIZE];
         }
 
         /// <summary>
@@ -83,7 +89,23 @@ namespace Battleships.Game.Objects
                 field = Owner
             });
 
-            _coordinator?.SetState(Data.GameState.Waiting);
+            _coordinator?.SetState(GameState.Waiting);
+        }
+
+        /// <summary>
+        /// Does the field have a buoy at a position?
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>Whether it has a buoy there.</returns>
+        public bool HasBuoyAt(Vector2Int position)
+        {
+            if (position.X < 0 || position.X >= FIELD_SIZE ||
+                position.Y < 0 || position.Y >= FIELD_SIZE)
+            {
+                return true;
+            }
+
+            return _buoyField[position.X, position.Y] != null;
         }
 
         /// <summary>
@@ -141,11 +163,34 @@ namespace Battleships.Game.Objects
                 return;
             }
 
-            part.Sink();
+            part.Sunk = true;
             SpawnFireAt(position);
 
-            var unsunk = GetUnsunkPieces();
+            // Check if we have any more of this ship's parts alive.
+            var shipPartsLeft = part.Ship?
+                .Parts.Count(part => !part.Sunk);
 
+            if (shipPartsLeft.HasValue &&
+                shipPartsLeft < 1)
+            {
+                var ship = part.Ship!;
+
+                foreach (var shipPart in ship.Parts)
+                    shipPart?.Sink();
+
+                SurroundSunkShipWithBuoys(ship.Position, ship.ShipFacing, ship.Length);
+
+                Peer?.Send(new ShipSunkMessage
+                {
+                    playfield = Owner,
+                    x = ship.Position.X,
+                    y = ship.Position.Y,
+                    facing = ship.ShipFacing,
+                    length = ship.Length
+                }, passLockstep: false);
+            }
+
+            var unsunk = GetUnsunkPieces();
             Peer?.Send(new BombingResultMessage
             {
                 hit = true,
@@ -206,10 +251,38 @@ namespace Battleships.Game.Objects
         /// <param name="position"></param>
         public void SpawnBuoyAt(Vector2Int position)
         {
-            ThisGame!.AddGameObject<Buoy>()
-                .Position = FieldCoordinatesToPosition(position);
+            if (HasBuoyAt(position))
+                return;
 
-            SpawnSplashAt(position);
+            var buoy = ThisGame!.AddGameObject<Buoy>();
+            var begin = FieldCoordinatesToPosition(position);
+            begin.Y = 5f;
+
+            var end = begin;
+            end.Y = 0f;
+
+            var playedSound = false;
+
+            new Tween<Vector3>()
+                .WithBeginningValue(begin)
+                .WithEndingValue(end)
+                .WithEasing(TimeEasing.OutElastic)
+                .WithTime(1f + Random.Shared.NextSingle() * 2f)
+                .WithIncrementer((a, b, t) =>
+                {
+                    if (t >= 1 && !playedSound)
+                    {
+                        SpawnSplashAt(position);
+                        playedSound = true;
+                    }
+
+                    return a.LinearInterpolation(b, t);
+                })
+                .WithUpdateCallback(pos => buoy.Position = pos)
+                .WithFinishedCallback(fin => buoy.Position = fin)
+                .BindTo(GetGameObjectFromGame<TweenEngine>()!);
+
+            _buoyField[position.X, position.Y] = buoy;
         }
 
         /// <summary>
@@ -375,6 +448,61 @@ namespace Battleships.Game.Objects
             var y = field.Y - 5;
 
             return new Vector3(x + 0.5f, 0f, y + 0.5f) + Position;
+        }
+
+        /// <summary>
+        /// Surrounds a sunk ship with buoys.
+        /// </summary>
+        /// <param name="beginningPosition">The beginning position.</param>
+        /// <param name="facing">The facing of the ship.</param>
+        /// <param name="length">The length.</param>
+        public void SurroundSunkShipWithBuoys(Vector2Int beginningPosition, Ship.Facing facing, int length)
+        {
+            var endingPosition = beginningPosition;
+            if (facing == Ship.Facing.Down)
+            {
+                endingPosition.Y += length;
+                endingPosition.X += 1;
+            }
+            else
+            {
+                endingPosition.X += length;
+                endingPosition.Y += 1;
+            }
+
+            beginningPosition.X -= 1;
+            beginningPosition.Y -= 1;
+
+            var min = new Vector2Int(
+                Math.Min(beginningPosition.X, endingPosition.X),
+                Math.Min(beginningPosition.Y, endingPosition.Y)
+            );
+
+            var max = new Vector2Int(
+                Math.Max(beginningPosition.X, endingPosition.X),
+                Math.Max(beginningPosition.Y, endingPosition.Y)
+            );
+
+            //SpawnBuoyAt(beginningPosition);
+            //SpawnBuoyAt(endingPosition);
+            
+            for (var x = min.X; x <= max.X; x++)
+            {
+                for (var y = min.Y; y <= max.Y; y++)
+                {
+                    if (x < 0 || x >= FIELD_SIZE || 
+                        y < 0 || y >= FIELD_SIZE)
+                        continue;
+
+                    //if ((x == beginningPosition.X && facing == Ship.Facing.Down) || 
+                    //    (y == beginningPosition.Y && facing == Ship.Facing.Right))
+                    //    continue;
+
+                    Console.WriteLine($"[x:{x}, y:{y}]");
+
+                    SpawnBuoyAt(new(x, y));
+                }
+            }
         }
 
         /// <summary>

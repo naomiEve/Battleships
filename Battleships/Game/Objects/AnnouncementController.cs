@@ -49,10 +49,10 @@ internal class AnnouncementController : GameObject,
     public override void Start()
     {
         SetTextureFor(AnnouncementType.BuildYourFleet, ThisGame!.AssetDatabase.Get<TextureAsset>("build_your_fleet")!);
-        SetTextureFor(AnnouncementType.YourTurn, ThisGame!.AssetDatabase.Get<TextureAsset>("your_turn")!);
-        SetTextureFor(AnnouncementType.OpponentsTurn, ThisGame!.AssetDatabase.Get<TextureAsset>("opponents_turn")!);
-        SetTextureFor(AnnouncementType.Player1Won, ThisGame!.AssetDatabase.Get<TextureAsset>("player1_wins")!);
-        SetTextureFor(AnnouncementType.Player2Won, ThisGame!.AssetDatabase.Get<TextureAsset>("player2_wins")!);
+        SetTextureFor(AnnouncementType.YourTurn, ThisGame!.AssetDatabase.Get<TextureAsset>("your_round")!);
+        SetTextureFor(AnnouncementType.OpponentsTurn, ThisGame!.AssetDatabase.Get<TextureAsset>("opponents_round")!);
+        SetTextureFor(AnnouncementType.Player1Won, ThisGame!.AssetDatabase.Get<TextureAsset>("player_1_wins")!);
+        SetTextureFor(AnnouncementType.Player2Won, ThisGame!.AssetDatabase.Get<TextureAsset>("player_2_wins")!);
     }
 
     /// <summary>
@@ -95,6 +95,7 @@ internal class AnnouncementController : GameObject,
     {
         if (_currentAnnouncement == AnnouncementType.None)
             return;
+
         var tex = _map![_currentAnnouncement].Texture!.Value;
         Raylib.DrawTexture(
             tex,

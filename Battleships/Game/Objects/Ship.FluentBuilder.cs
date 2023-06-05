@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using Battleships.Framework.Data;
+﻿using Battleships.Framework.Data;
 
 namespace Battleships.Game.Objects
 {

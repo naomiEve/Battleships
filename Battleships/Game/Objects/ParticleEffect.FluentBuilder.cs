@@ -63,8 +63,6 @@ namespace Battleships.Game.Objects
         public ParticleEffect Fire()
         {
             Playing = true;
-
-            Console.WriteLine("firing");
             return this;
         }
     }

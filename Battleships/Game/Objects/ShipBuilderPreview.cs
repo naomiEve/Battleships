@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Assets;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering;
 using Raylib_cs;
@@ -41,10 +42,34 @@ namespace Battleships.Game.Objects
         /// </summary>
         private Camera? _camera;
 
+        /// <summary>
+        /// The tail of the ship.
+        /// </summary>
+        private ModelAsset? _shipTail;
+
+        /// <summary>
+        /// The head of the ship.
+        /// </summary>
+        private ModelAsset? _shipHead;
+
+        /// <summary>
+        /// The body of the ship.
+        /// </summary>
+        private ModelAsset? _shipBody;
+
         /// <inheritdoc/>
         public override void Start()
         {
             _camera = GetGameObjectFromGame<Camera>();
+
+            _shipBody = ThisGame!.AssetDatabase
+                .Get<ModelAsset>("ship_body");
+
+            _shipTail = ThisGame!.AssetDatabase
+                .Get<ModelAsset>("ship_tail");
+
+            _shipHead = ThisGame!.AssetDatabase
+                .Get<ModelAsset>("ship_head");
         }
 
         /// <inheritdoc/>
@@ -95,15 +120,35 @@ namespace Battleships.Game.Objects
             if (!_hit)
                 color = Color.RED;
 
+            color.a = 128;
+
             for (var i = 0; i < Length; i++)
             {
                 var pos = Position;
                 if (Facing == Ship.Facing.Down)
-                    pos.Z += i;
+                    pos.Z += i - 0.5f;
                 else
-                    pos.X += i;
+                    pos.X += i - 0.5f;
 
-                Raylib.DrawCube(pos, 1f, 1f, 1f, color);
+                Model? model;
+                if (i == 0)
+                    model = _shipHead?.Model;
+                else if (i == Length - 1)
+                    model = _shipTail?.Model;
+                else
+                    model = _shipBody?.Model;
+
+                if (!model.HasValue)
+                    continue;
+
+                Raylib.DrawModelEx(
+                    model.Value, 
+                    pos, 
+                    Vector3.UnitY, 
+                    Facing == Ship.Facing.Down ? 0f : 90f, 
+                    new(.5f), 
+                    color
+                 );
             }
         }
     }

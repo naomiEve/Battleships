@@ -1,6 +1,8 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Assets;
+using Battleships.Framework.Math;
 using Battleships.Framework.Objects;
+using Battleships.Framework.Tweening;
 using Raylib_cs;
 
 namespace Battleships.Game.Objects
@@ -58,6 +60,11 @@ namespace Battleships.Game.Objects
         private ModelAsset? _model;
 
         /// <summary>
+        /// The rotation while sinking.
+        /// </summary>
+        private float _sinkRotation;
+
+        /// <summary>
         /// Set this part's type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -86,10 +93,29 @@ namespace Battleships.Game.Objects
         /// </summary>
         public void Sink()
         {
-            if (Sunk)
-                return;
+            new Tween<float>()
+                .WithBeginningValue(InitialPosition.Y)
+                .WithEndingValue(InitialPosition.Y - 10)
+                .WithTime(5f)
+                .WithEasing(TimeEasing.Linear)
+                .WithIncrementer(Mathematics.LinearInterpolation)
+                .WithUpdateCallback(y => InitialPosition = new Vector3(InitialPosition.X, y, InitialPosition.Z))
+                .BindTo(GetGameObjectFromGame<TweenEngine>()!);
 
-            Sunk = true;
+            new Tween<float>()
+                .WithBeginningValue(0f)
+                .WithEndingValue(Random.Shared.NextSingle() * 10f)
+                .WithTime(3f)
+                .WithEasing(TimeEasing.Linear)
+                .WithIncrementer(Mathematics.LinearInterpolation)
+                .WithUpdateCallback(rot => _sinkRotation = rot)
+                .BindTo(GetGameObjectFromGame<TweenEngine>()!);
+
+            ThisGame!.AddGameObject<ParticleEffect>()
+                .WithPosition(Position)
+                .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("explosion_atlas")!)
+                .WithDuration(1f)
+                .Fire();
         }
 
         /// <inheritdoc/>
@@ -107,17 +133,24 @@ namespace Battleships.Game.Objects
                 return;
             }
 
+            var color = Color.WHITE;
+            if (Sunk)
+                color = Color.GRAY;
+
             var pos = Position;
+            var axis = Vector3.UnitY;
+            if (_sinkRotation > float.Epsilon)
+                axis += Vector3.UnitX;
             
             if (Ship!.ShipFacing == Ship.Facing.Right)
             {
                 pos.X -= 0.5f;
-                Raylib.DrawModelEx(_model.Model, pos, Vector3.UnitY, 90f, new Vector3(0.5f), Color.WHITE);
+                Raylib.DrawModelEx(_model.Model, pos, axis, 90f + _sinkRotation, new(0.5f), color);
             }
             else
             {
                 pos.Z -= 0.5f;
-                Raylib.DrawModel(_model.Model, pos, 0.5f, Color.WHITE);
+                Raylib.DrawModelEx(_model.Model, pos, axis, 0f + _sinkRotation, new(0.5f), color);
             }
         }
     }
