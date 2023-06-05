@@ -78,6 +78,8 @@ namespace Battleships.Game
         /// </summary>
         private void SetupAnnouncements()
         {
+            AssetDatabase.Load<SoundAsset>("announcement", "./assets/bowomp.wav");
+
             AssetDatabase.Load<TextureAsset>("build_your_fleet", "./assets/build_your_fleet.png");
             AssetDatabase.Load<TextureAsset>("your_round", "./assets/your_round.png");
             AssetDatabase.Load<TextureAsset>("opponents_round", "./assets/opponents_round.png");
@@ -129,8 +131,8 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
-            AddGameObject<ShipCannon>();
-            AddGameObject<DebugObject>();
+            //AddGameObject<ShipCannon>();
+            //AddGameObject<DebugObject>();
         }
     }
 }

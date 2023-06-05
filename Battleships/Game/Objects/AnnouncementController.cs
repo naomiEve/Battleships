@@ -74,6 +74,10 @@ internal class AnnouncementController : GameObject,
     {
         _currentAnnouncement = type;
 
+        ThisGame!.AssetDatabase
+            .Get<SoundAsset>("announcement")?
+            .Play();
+
         _opacityTween?.Kill();
         _opacityTween = new Tween<int>()
             .WithBeginningValue(255)
