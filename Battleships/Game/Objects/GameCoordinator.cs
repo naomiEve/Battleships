@@ -45,7 +45,7 @@ namespace Battleships.Game.Objects
         private int _shipLengthIndex = 0;
 
         /// <inheritdoc/>
-        public override void Start()
+        public override async void Start()
         {
             Peer?.MessageRegistry.RegisterMessage<FinishedBuildingMessage>(mesg =>
             {
@@ -116,6 +116,12 @@ namespace Battleships.Game.Objects
             SetPlayfieldForPlayer(1, player2Playfield);
 
             SetState(GameState.ShipBuilding);
+
+            // Wait a bit for the game to stabilize before displaying the announcement.
+            // Otherwise we'd get a bogus dt in the TweenEngine update.
+            await Task.Delay(1000);
+            GetGameObjectFromGame<AnnouncementController>()!
+                .DisplayAnnouncement(AnnouncementController.AnnouncementType.BuildYourFleet);
         }
 
         /// <summary>
@@ -145,7 +151,11 @@ namespace Battleships.Game.Objects
         /// <param name="sendMessage">Should we send the message to the other player?</param>
         public void SetBomber(int player, bool sendMessage)
         {
-            SetState(player == Peer!.PeerId ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
+            var newBomberIsUs = player == Peer!.PeerId;
+
+            SetState(newBomberIsUs ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
+            GetGameObjectFromGame<AnnouncementController>()!
+                .DisplayAnnouncement(newBomberIsUs ? AnnouncementController.AnnouncementType.YourTurn : AnnouncementController.AnnouncementType.OpponentsTurn);
 
             if (sendMessage)
             {

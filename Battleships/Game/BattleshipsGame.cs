@@ -73,11 +73,26 @@ namespace Battleships.Game
             AddGameObject<WaterRenderer>();
         }
 
+        /// <summary>
+        /// Sets up the announcement controller and the texture it uses.
+        /// </summary>
+        private void SetupAnnouncements()
+        {
+            AssetDatabase.Load<TextureAsset>("build_your_fleet", "./assets/build_your_fleet.png");
+            AssetDatabase.Load<TextureAsset>("your_round", "./assets/your_round.png");
+            AssetDatabase.Load<TextureAsset>("opponents_round", "./assets/opponents_round.png");
+            AssetDatabase.Load<TextureAsset>("player_1_wins", "./assets/player_1_wins.png");
+            AssetDatabase.Load<TextureAsset>("player_2_wins", "./assets/player_2_wins.png");
+
+            AddGameObject<AnnouncementController>();
+        }
+
         /// <inheritdoc/>
         protected override void Start()
         {
             SetupShipModels();
             SetupWater();
+            SetupAnnouncements();
 
             AssetDatabase.Load<ModelAsset>("buoy", "./assets/buoy.obj");
 
@@ -109,11 +124,11 @@ namespace Battleships.Game
             _camera.Rotate(new Vector3(45, 0, 0));
             CurrentRenderer = _camera;
 
-            AddGameObject<GameCoordinator>();
             var ambience = AddGameObject<AmbienceController>();
             ambience.SetMusic(AssetDatabase.Get<MusicAsset>("waves")!);
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
+            AddGameObject<GameCoordinator>();
             AddGameObject<DebugObject>();
         }
     }
