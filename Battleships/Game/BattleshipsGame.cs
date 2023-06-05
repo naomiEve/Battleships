@@ -52,6 +52,7 @@ namespace Battleships.Game
             SetBattleshipTexture(AssetDatabase.Load<ModelAsset>("ship_tail", "./assets/back.obj"));
             SetBattleshipTexture(AssetDatabase.Load<ModelAsset>("ship_head", "./assets/front.obj"));
             SetBattleshipTexture(AssetDatabase.Load<ModelAsset>("ship_body", "./assets/middle.obj"));
+            SetBattleshipTexture(AssetDatabase.Load<ModelAsset>("ship_cannon", "./assets/cannon.obj"));
         }
 
         /// <summary>
@@ -128,7 +129,8 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
-            //AddGameObject<DebugObject>();
+            AddGameObject<ShipCannon>();
+            AddGameObject<DebugObject>();
         }
     }
 }

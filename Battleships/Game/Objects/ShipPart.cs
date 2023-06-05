@@ -45,9 +45,19 @@ namespace Battleships.Game.Objects
         public Ship? Ship { get; set; }
 
         /// <summary>
-        /// Is this part sunk?
+        /// The cannon attached to this part.
         /// </summary>
-        public bool Sunk { get; set; } = false;
+        public ShipCannon? Cannon { get; set; }
+
+        /// <summary>
+        /// Is this part hit?
+        /// </summary>
+        public bool Hit { get; set; } = false;
+
+        /// <summary>
+        /// Is this part underwater?
+        /// </summary>
+        public bool Underwater { get; set; } = false;
 
         /// <summary>
         /// The bobbing offset.
@@ -89,10 +99,25 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Adds a cannon to this ship part.
+        /// </summary>
+        public void AddCannon()
+        {
+            if (Cannon is not null)
+                return;
+
+            Cannon = ThisGame!.AddGameObject<ShipCannon>();
+            Cannon.Part = this;
+        }
+
+        /// <summary>
         /// Sink this piece.
         /// </summary>
         public void Sink()
         {
+            if (Underwater)
+                return;
+
             new Tween<float>()
                 .WithBeginningValue(InitialPosition.Y)
                 .WithEndingValue(InitialPosition.Y - 10)
@@ -116,12 +141,17 @@ namespace Battleships.Game.Objects
                 .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("explosion_atlas")!)
                 .WithDuration(1f)
                 .Fire();
+
+            Underwater = true;
         }
 
         /// <inheritdoc/>
         public override void Update(float dt)
         {
             Position = InitialPosition + new Vector3(0f, 0.2f, 0f) * BobOffset;
+
+            if (Cannon is not null)
+                Cannon!.Position = Position;
         }
 
         /// <inheritdoc/>
@@ -134,7 +164,7 @@ namespace Battleships.Game.Objects
             }
 
             var color = Color.WHITE;
-            if (Sunk)
+            if (Hit)
                 color = Color.GRAY;
 
             var pos = Position;

@@ -90,7 +90,7 @@ namespace Battleships.Game.Objects
             Position = floorPoint;
 
             if (Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
-                Playfield!.SendBombField(point.Value);
+                Playfield!.DoBombFieldCinematic(point.Value);
 
             _hit = true;
         }

@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Battleships.Framework.Assets;
 using Battleships.Framework.Data;
+using Battleships.Framework.Extensions;
 using Battleships.Framework.Math;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Tweening;
@@ -77,6 +78,46 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Does the field bombing cinematic.
+        /// </summary>
+        /// <param name="position">The position to bomb.</param>
+        public async void DoBombFieldCinematic(Vector2Int position)
+        {
+            // First, select a random cannon to fire from on our field.
+            var ourField = GetGameObjectFromGame<GameCoordinator>()!
+                .GetPlayfieldForPlayer((Owner + 1) % 2)!;
+
+            var cannon = ourField._field
+                            .Flatten()
+                            .Where(part => part is not null && part.Cannon is not null)
+                            .Where(part => !part.Underwater)
+                            .Select(part => part.Cannon)
+                            .RandomElement();
+
+            // Now, pan the camera to our field.
+            _camera!.Objective = CameraObjective.MoveToSelf;
+
+            Console.WriteLine(_camera!.Objective);
+            await AsyncHelper.While(() => _camera.Objective != CameraObjective.Idle);
+            Console.WriteLine(_camera!.Objective);
+
+            // Wait just a while more.
+            await Task.Delay(TimeSpan.FromMilliseconds(1000));
+
+            // Spawn an explosion at the cannon's position.
+            cannon?.PlayShooting();
+
+            // Wait again.
+            await Task.Delay(TimeSpan.FromMilliseconds(800));
+
+            // Go back.
+            _camera!.Objective = CameraObjective.MoveToEnemy;
+            await AsyncHelper.While(() => _camera.Objective != CameraObjective.Idle);
+            
+            SendBombField(position);
+        }
+
+        /// <summary>
         /// Tries to bomb a field.
         /// </summary>
         /// <param name="position">The position.</param>
@@ -149,7 +190,7 @@ namespace Battleships.Game.Objects
                 return;
             }
 
-            if (part.Sunk)
+            if (part.Hit)
             {
                 Peer?.Send(new BombingResultMessage
                 {
@@ -163,12 +204,12 @@ namespace Battleships.Game.Objects
                 return;
             }
 
-            part.Sunk = true;
+            part.Hit = true;
             SpawnFireAt(position);
 
             // Check if we have any more of this ship's parts alive.
             var shipPartsLeft = part.Ship?
-                .Parts.Count(part => !part.Sunk);
+                .Parts.Count(part => !part.Hit);
 
             if (shipPartsLeft.HasValue &&
                 shipPartsLeft < 1)
@@ -215,8 +256,11 @@ namespace Battleships.Game.Objects
         /// <param name="position">The position.</param>
         public void SpawnFireAt(Vector2Int position)
         {
+            var pos = FieldCoordinatesToPosition(position);
+            pos.Y += 0.3f;
+
             ThisGame!.AddGameObject<ParticleEffect>()
-                .WithPosition(FieldCoordinatesToPosition(position))
+                .WithPosition(pos)
                 .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("fire_atlas")!)
                 .WithDuration(1f)
                 .WithLooping(true)
@@ -299,7 +343,7 @@ namespace Battleships.Game.Objects
             var count = 0;
             for (var x = 0; x < FIELD_SIZE; x++)
                 for (var y = 0; y < FIELD_SIZE; y++)
-                    count += (_field[x, y]?.Sunk == false) ? 1 : 0;
+                    count += (_field[x, y]?.Hit == false) ? 1 : 0;
 
             return count;
         }
