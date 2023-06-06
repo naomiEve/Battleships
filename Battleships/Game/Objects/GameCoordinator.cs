@@ -22,6 +22,11 @@ namespace Battleships.Game.Objects
         /// The current state of the game.
         /// </summary>
         public GameState State { get; private set; }
+
+        /// <summary>
+        /// The ship count.
+        /// </summary>
+        public static int ShipCount => _shipLengths.Length;
         
         /// <summary>
         /// The playfields for each player.
@@ -36,8 +41,9 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The sizes of the ships we're placing in the initial round.
         /// </summary>
-        //private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-        private readonly static int[] _shipLengths = { 4, 3 };
+        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
+        //private readonly static int[] _shipLengths = { 4, 3 };
+
         /// <summary>
         /// The current index of the ship length.
         /// </summary>
@@ -113,6 +119,8 @@ namespace Battleships.Game.Objects
                 field.SurroundSunkShipWithBuoys(new(shipSunkMesg.x, shipSunkMesg.y), shipSunkMesg.facing, shipSunkMesg.length);
             });
 
+            ThisGame!.AddGameObject<GameLog>();
+
             _camera = ThisGame!.AddGameObject<CameraController>();
 
             // Construct the playfields
@@ -132,6 +140,9 @@ namespace Battleships.Game.Objects
             await Task.Delay(100);
             GetGameObjectFromGame<AnnouncementController>()!
                 .DisplayAnnouncement(AnnouncementController.AnnouncementType.BuildYourFleet);
+
+            GetGameObjectFromGame<GameLog>()!
+                .AddMessageToLog("Welcome to battleships.");
         }
 
         /// <summary>

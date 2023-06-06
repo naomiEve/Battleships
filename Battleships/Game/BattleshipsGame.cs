@@ -122,6 +122,8 @@ namespace Battleships.Game
                 .MakeAtlas(new Vector2Int(8, 8), 64)
                 .MakeCrispy();
 
+            AssetDatabase.Load<TextureAsset>("galleon", "./assets/galleon.png");
+
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
@@ -135,7 +137,6 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
-            AddGameObject<GameLog>();
             //AddGameObject<ShipCannon>();
             //AddGameObject<DebugObject>();
         }

@@ -69,6 +69,11 @@ namespace Battleships.Game.Objects
         public BombSelectionPreview? BombPreview { get; set; }
 
         /// <summary>
+        /// The ship counter.
+        /// </summary>
+        public ShipCounter? ShipCounter { get; set; }
+
+        /// <summary>
         /// Construct a new ship playfield.
         /// </summary>
         public ShipPlayfield()
@@ -507,6 +512,9 @@ namespace Battleships.Game.Objects
         /// <param name="length">The length.</param>
         public void SurroundSunkShipWithBuoys(Vector2Int beginningPosition, Ship.Facing facing, int length)
         {
+            // First, mark that we have lost ships.
+            ShipCounter!.ShipsLeft -= 1;
+
             var endingPosition = beginningPosition;
             if (facing == Ship.Facing.Down)
             {
@@ -572,6 +580,9 @@ namespace Battleships.Game.Objects
             _shipPreview = ThisGame!.AddGameObject<ShipBuilderPreview>();
             _shipPreview!.Playfield = this;
             _shipPreview.Length = 4;
+
+            ShipCounter = ThisGame!.AddGameObject<ShipCounter>();
+            ShipCounter.Playfield = this;
 
             _coordinator = GetGameObjectFromGame<GameCoordinator>();
             _camera = GetGameObjectFromGame<CameraController>();

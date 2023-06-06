@@ -43,7 +43,7 @@ internal class AnnouncementController : GameObject,
     /// <summary>
     /// The opacity of this announcement.
     /// </summary>
-    private int _opacity = 255;
+    private int _opacity = byte.MaxValue;
 
     /// <inheritdoc/>
     public override void Start()
@@ -80,7 +80,7 @@ internal class AnnouncementController : GameObject,
 
         _opacityTween?.Kill();
         _opacityTween = new Tween<int>()
-            .WithBeginningValue(255)
+            .WithBeginningValue(byte.MaxValue)
             .WithEndingValue(0)
             .WithEasing(TimeEasing.Linear)
             .WithTime(2f)
@@ -105,7 +105,7 @@ internal class AnnouncementController : GameObject,
             tex,
             (Raylib.GetScreenWidth() / 2) - (tex.width / 2),
             (Raylib.GetScreenHeight() / 2) - (tex.height / 2),
-            new Color(255, 255, 255, _opacity)
+            new Color(255, 255, 255, Math.Clamp(_opacity, 0, byte.MaxValue))
         );
     }
 }
