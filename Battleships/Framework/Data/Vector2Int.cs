@@ -17,5 +17,31 @@
             X = x;
             Y = y;
         }
+
+        /// <inheritdoc/>
+        public static bool operator==(Vector2Int a, Vector2Int b)
+        {
+            return a.X == b.X 
+                && a.Y == b.Y;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator !=(Vector2Int a, Vector2Int b)
+        {
+            return !(a == b);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
+        {
+            return obj is Vector2Int vec && 
+                this == vec;
+        }
+
+        /// <inheritdoc
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
     }
 }

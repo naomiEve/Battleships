@@ -118,6 +118,10 @@ namespace Battleships.Game
                 .Materials![0]
                 .SetTexture(MaterialMapIndex.MATERIAL_MAP_ALBEDO, AssetDatabase.Get<TextureAsset>("crosshair")!);
 
+            AssetDatabase.Load<TextureAsset>("smallfont", "./assets/doom_smallfont.png")
+                .MakeAtlas(new Vector2Int(8, 8), 64)
+                .MakeCrispy();
+
             _camera = AddGameObject<Camera>()
                 .WithPosition(new Vector3(0, 10f, 10f))
                 .WithFOV(10f)
@@ -131,6 +135,7 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
+            AddGameObject<GameLog>();
             //AddGameObject<ShipCannon>();
             //AddGameObject<DebugObject>();
         }

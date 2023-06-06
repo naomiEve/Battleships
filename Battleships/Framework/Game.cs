@@ -48,6 +48,11 @@ namespace Battleships.Framework
         private List<GameObject> _gameObjects;
 
         /// <summary>
+        /// The last screen dimensions.
+        /// </summary>
+        private Vector2Int _lastDimensions;
+
+        /// <summary>
         /// Construct a new game window.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
@@ -82,12 +87,20 @@ namespace Battleships.Framework
             Preinitialize();
 
             Raylib.InitWindow(Dimensions.X, Dimensions.Y, Title);
+            Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
             Raylib.InitAudioDevice();
 
             Start();
 
             while (!Raylib.WindowShouldClose())
             {
+                var dims = new Vector2Int(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+                if (_lastDimensions != dims)
+                {
+                    _lastDimensions = dims;
+                    CurrentRenderer!.ResizeFramebuffer(dims);
+                }
+
                 Update(Raylib.GetFrameTime());
                 if (ShouldClose)
                     break;

@@ -16,7 +16,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The distance between both playfields.
         /// </summary>
-        const float PLAYFIELD_DISTANCE = 15f;
+        const float PLAYFIELD_DISTANCE = 30f;
 
         /// <summary>
         /// The current state of the game.
@@ -50,6 +50,8 @@ namespace Battleships.Game.Objects
             {
                 var buildMesg = (FinishedBuildingMessage)mesg;
 
+                GetGameObjectFromGame<GameLog>()!.AddMessageToLog($"Player {buildMesg.id} finished building.");
+
                 _playfields![buildMesg.id].FinishedBuilding = true;
                 CheckIfAllFinishedBuilding();
             });
@@ -57,6 +59,7 @@ namespace Battleships.Game.Objects
             Peer?.MessageRegistry.RegisterMessage<SetBomberMessage>(mesg =>
             {
                 var bomberMesg = (SetBomberMessage)mesg;
+
                 SetBomber(bomberMesg.id, false);
             });
 
@@ -158,6 +161,9 @@ namespace Battleships.Game.Objects
         public void SetBomber(int player, bool sendMessage)
         {
             var newBomberIsUs = player == Peer!.PeerId;
+
+            GetGameObjectFromGame<GameLog>()!
+                .AddMessageToLog(newBomberIsUs ? "Your turn." : "Opponent's turn.");
 
             SetState(newBomberIsUs ? GameState.PlayerBombing : GameState.OtherPlayerBombing);
             GetGameObjectFromGame<AnnouncementController>()!
@@ -267,6 +273,8 @@ namespace Battleships.Game.Objects
                     }
                     else
                     {
+                        GetGameObjectFromGame<GameLog>()!.AddMessageToLog($"Player {Peer?.PeerId} finished building.");
+
                         _playfields![Peer!.PeerId!.Value].FinishedBuilding = true;
                         Peer!.Send(new FinishedBuildingMessage
                         {

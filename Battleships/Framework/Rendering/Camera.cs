@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Battleships.Framework.Data;
 using Battleships.Framework.Objects;
 using Battleships.Framework.Rendering.ShaderPasses;
 using Raylib_cs;
@@ -328,6 +329,13 @@ namespace Battleships.Framework.Rendering
         {
             Raylib.EndMode3D();
             Raylib.EndTextureMode();
+        }
+
+        /// <inheritdoc/>
+        public void ResizeFramebuffer(Vector2Int dims)
+        {
+            Raylib.UnloadRenderTexture(_backingTexture);
+            _backingTexture = Raylib.LoadRenderTexture(dims.X, dims.Y);
         }
     }
 }

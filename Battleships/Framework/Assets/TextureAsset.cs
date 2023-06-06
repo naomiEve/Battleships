@@ -39,15 +39,25 @@ namespace Battleships.Framework.Assets
         }
 
         /// <summary>
+        /// Disables filtering.
+        /// </summary>
+        public void MakeCrispy()
+        {
+            Raylib.SetTextureFilter(Texture!.Value, TextureFilter.TEXTURE_FILTER_POINT);
+        }
+
+        /// <summary>
         /// Makes this texture asset into an atlas.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
         /// <param name="frameCount">The frame count of this atlas.</param>
-        public void MakeAtlas(Vector2Int dimensions, int frameCount)
+        public TextureAsset MakeAtlas(Vector2Int dimensions, int frameCount)
         {
             GridSize = dimensions;
             FrameCount = frameCount;
             IsAtlas = true;
+
+            return this;
         }
 
         /// <summary>

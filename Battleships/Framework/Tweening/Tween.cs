@@ -95,6 +95,9 @@
         /// </summary>
         public void Kill()
         {
+            if (Finished)
+                return;
+
             Value = EndValue;
             Finished = true;
             OnFinished?.Invoke(Value!);
