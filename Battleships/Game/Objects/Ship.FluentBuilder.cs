@@ -73,7 +73,7 @@ namespace Battleships.Game.Objects
                 // Add a cannon to this part if either:
                 //  - This part is the ending part of a length 2 ship.
                 //  - This part is the 2nd part of a length 2+ ship.
-                if ((Length == 2 && i == Length - 1) ||
+                if ((Length <= 2 && i == 0) ||
                     (Length > 2 && i == 1))
                 {
                     part?.AddCannon();
