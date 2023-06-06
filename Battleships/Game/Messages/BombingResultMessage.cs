@@ -1,5 +1,6 @@
 ﻿using Battleships.Framework.Networking;
 using Battleships.Framework.Networking.Serialization;
+using Battleships.Game.Objects;
 
 namespace Battleships.Game.Messages
 {
@@ -11,6 +12,7 @@ namespace Battleships.Game.Messages
         public bool hit;
         public int x, y;
         public int field;
+        public Ship.Facing facing;
 
         public void Deserialize(ref NetworkReader reader)
         {
@@ -18,6 +20,7 @@ namespace Battleships.Game.Messages
             x = reader.Read<int>();
             y = reader.Read<int>();
             field = reader.Read<int>();
+            facing = reader.Read<Ship.Facing>();
         }
 
         public void Serialize(ref NetworkWriter writer)
@@ -26,6 +29,7 @@ namespace Battleships.Game.Messages
             writer.Write(x);
             writer.Write(y);
             writer.Write(field);
+            writer.Write(facing);
         }
     }
 }

@@ -41,8 +41,8 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The sizes of the ships we're placing in the initial round.
         /// </summary>
-        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-        //private readonly static int[] _shipLengths = { 4, 3 };
+        //private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
+        private readonly static int[] _shipLengths = { 4, 3 };
 
         /// <summary>
         /// The current index of the ship length.
@@ -88,7 +88,7 @@ namespace Battleships.Game.Objects
                 {
                     SetState(GameState.PlayerBombing);
 
-                    field.SpawnFireAt(pos);
+                    field.SpawnShipDebrisAt(pos);
                 }
                 else
                 {

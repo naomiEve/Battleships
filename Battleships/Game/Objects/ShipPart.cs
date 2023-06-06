@@ -15,6 +15,11 @@ namespace Battleships.Game.Objects
         IPositionedObject
     {
         /// <summary>
+        /// The scale of a ship part.
+        /// </summary>
+        public const float SHIP_PART_SCALE = 0.5f;
+
+        /// <summary>
         /// The type of the ship part.
         /// </summary>
         public enum PartType
@@ -175,12 +180,12 @@ namespace Battleships.Game.Objects
             if (Ship!.ShipFacing == Ship.Facing.Right)
             {
                 pos.X -= 0.5f;
-                Raylib.DrawModelEx(_model.Model, pos, axis, 90f + _sinkRotation, new(0.5f), color);
+                Raylib.DrawModelEx(_model.Model, pos, axis, 90f + _sinkRotation, new(SHIP_PART_SCALE), color);
             }
             else
             {
                 pos.Z -= 0.5f;
-                Raylib.DrawModelEx(_model.Model, pos, axis, 0f + _sinkRotation, new(0.5f), color);
+                Raylib.DrawModelEx(_model.Model, pos, axis, 0f + _sinkRotation, new(SHIP_PART_SCALE), color);
             }
         }
     }

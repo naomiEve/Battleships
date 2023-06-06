@@ -76,7 +76,7 @@ namespace Battleships.Game.Objects
                 return;
             }
 
-            if (Playfield!.HasBuoyAt(point!.Value))
+            if (Playfield!.HasDebrisAt(point!.Value))
             {
                 _hit = false;
                 return;

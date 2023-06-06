@@ -146,7 +146,7 @@ namespace Battleships.Game.Objects
                     pos, 
                     Vector3.UnitY, 
                     Facing == Ship.Facing.Down ? 0f : 90f, 
-                    new(.5f), 
+                    new(ShipPart.SHIP_PART_SCALE), 
                     color
                  );
             }

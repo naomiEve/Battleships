@@ -29,9 +29,9 @@ namespace Battleships.Game.Objects
         private readonly ShipPart[,] _field;
 
         /// <summary>
-        /// The field containing buoys.
+        /// The field containing debris.
         /// </summary>
-        private readonly Buoy[,] _buoyField;
+        private readonly GameObject[,] _debrisField;
 
         /// <summary>
         /// The preview cube.
@@ -79,7 +79,7 @@ namespace Battleships.Game.Objects
         public ShipPlayfield()
         {
             _field = new ShipPart[FIELD_SIZE, FIELD_SIZE];
-            _buoyField = new Buoy[FIELD_SIZE, FIELD_SIZE];
+            _debrisField = new GameObject[FIELD_SIZE, FIELD_SIZE];
         }
 
         /// <summary>
@@ -139,11 +139,11 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
-        /// Does the field have a buoy at a position?
+        /// Does the field have debris at a position?
         /// </summary>
         /// <param name="position">The position.</param>
-        /// <returns>Whether it has a buoy there.</returns>
-        public bool HasBuoyAt(Vector2Int position)
+        /// <returns>Whether it has debris there.</returns>
+        public bool HasDebrisAt(Vector2Int position)
         {
             if (position.X < 0 || position.X >= FIELD_SIZE ||
                 position.Y < 0 || position.Y >= FIELD_SIZE)
@@ -151,7 +151,7 @@ namespace Battleships.Game.Objects
                 return true;
             }
 
-            return _buoyField[position.X, position.Y] != null;
+            return _debrisField[position.X, position.Y] != null;
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace Battleships.Game.Objects
             }
 
             part.Hit = true;
-            SpawnFireAt(position);
+            SpawnFireAt(position, part);
 
             // Check if we have any more of this ship's parts alive.
             var shipPartsLeft = part.Ship?
@@ -242,7 +242,8 @@ namespace Battleships.Game.Objects
                 hit = true,
                 x = position.X,
                 y = position.Y,
-                field = Owner
+                field = Owner,
+                facing = part.Ship!.ShipFacing
             }, passLockstep: unsunk > 0);
 
             // If we have no more afloat pieces, send the field cleared message.
@@ -256,10 +257,29 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Spawns ship debris at a position.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        public void SpawnShipDebrisAt(Vector2Int position)
+        {
+            var pos = FieldCoordinatesToPosition(position);
+
+            var debris = ThisGame!.AddGameObject<ShipDebris>();
+            debris.Position = pos;
+            debris.Playfield = this;
+            debris.FloatUp();
+
+            SpawnFireAt(position, debris);
+
+            _debrisField[position.X, position.Y] = debris;
+        }
+
+        /// <summary>
         /// Spawns an explosion particle effect at a given position.
         /// </summary>
         /// <param name="position">The position.</param>
-        public void SpawnFireAt(Vector2Int position)
+        /// <param name="followed">The object to follow.</param>
+        public void SpawnFireAt(Vector2Int position, IPositionedObject followed = null!)
         {
             var pos = FieldCoordinatesToPosition(position);
             pos.Y += 0.3f;
@@ -269,7 +289,7 @@ namespace Battleships.Game.Objects
                 .WithAtlas(ThisGame.AssetDatabase.Get<TextureAsset>("fire_atlas")!)
                 .WithDuration(1f)
                 .WithLooping(true)
-                .Following(_field[position.X, position.Y], new Vector3(0, 0.4f, 0))
+                .Following(followed, new Vector3(0, 0.4f, 0))
                 .Fire();
 
             ThisGame!.AssetDatabase
@@ -305,7 +325,7 @@ namespace Battleships.Game.Objects
         /// <param name="playSound">Should we play the splash sound?</param>
         public void SpawnBuoyAt(Vector2Int position, bool playSound = true)
         {
-            if (HasBuoyAt(position))
+            if (HasDebrisAt(position))
                 return;
 
             var buoy = ThisGame!.AddGameObject<Buoy>();
@@ -336,7 +356,7 @@ namespace Battleships.Game.Objects
                 .WithFinishedCallback(fin => buoy.Position = fin)
                 .BindTo(GetGameObjectFromGame<TweenEngine>()!);
 
-            _buoyField[position.X, position.Y] = buoy;
+            _debrisField[position.X, position.Y] = buoy;
         }
 
         /// <summary>
@@ -540,9 +560,6 @@ namespace Battleships.Game.Objects
                 Math.Max(beginningPosition.Y, endingPosition.Y)
             );
 
-            //SpawnBuoyAt(beginningPosition);
-            //SpawnBuoyAt(endingPosition);
-            
             for (var x = min.X; x <= max.X; x++)
             {
                 for (var y = min.Y; y <= max.Y; y++)
