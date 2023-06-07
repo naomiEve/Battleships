@@ -83,11 +83,24 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Converts a position ([1, 1]) to a letter-number pair (A1).
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>The pair.</returns>
+        private static string FieldToLetterNumberPair(Vector2Int position)
+        {
+            return $"{(char)('A' + position.X)}{position.Y + 1}";
+        }
+
+        /// <summary>
         /// Does the field bombing cinematic.
         /// </summary>
         /// <param name="position">The position to bomb.</param>
         public async void DoBombFieldCinematic(Vector2Int position)
         {
+            GetGameObjectFromGame<GameLog>()!
+                .AddMessageToLog($"You attempted to shoot {FieldToLetterNumberPair(position)}.");
+
             // First, select a random cannon to fire from on our field.
             var ourField = GetGameObjectFromGame<GameCoordinator>()!
                 .GetPlayfieldForPlayer((Owner + 1) % 2)!;
@@ -102,9 +115,7 @@ namespace Battleships.Game.Objects
             // Now, pan the camera to our field.
             _camera!.Objective = CameraObjective.MoveToSelf;
 
-            Console.WriteLine(_camera!.Objective);
             await AsyncHelper.While(() => _camera.Objective != CameraObjective.Idle);
-            Console.WriteLine(_camera!.Objective);
 
             // Wait just a while more.
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
@@ -155,6 +166,29 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Sends a bombing hit result back to the opponent.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <param name="passLockstep">Should we pass the lockstep?</param>
+        /// <param name="part">The part, if any.</param>
+        private void SendBombingHitResult(Vector2Int position, bool passLockstep, ShipPart? part = null)
+        {
+            var hit = part is not null;
+
+            GetGameObjectFromGame<GameLog>()!
+                .AddMessageToLog($"Opponent fired at {FieldToLetterNumberPair(position)} and {(hit ? "hit a ship" : "missed")}.");
+
+            Peer?.Send(new BombingResultMessage
+            {
+                hit = hit,
+                x = position.X,
+                y = position.Y,
+                field = Owner,
+                facing = hit ? part!.Ship!.ShipFacing : Ship.Facing.Down
+            }, passLockstep: passLockstep);
+        }
+
+        /// <summary>
         /// Tries to bomb a field at the given coordinates.
         /// </summary>
         /// <param name="position">The position.</param>
@@ -163,13 +197,7 @@ namespace Battleships.Game.Objects
             if (position.X < 0 || position.X >= FIELD_SIZE ||
                 position.Y < 0 || position.Y >= FIELD_SIZE)
             {
-                Peer?.Send(new BombingResultMessage
-                {
-                    hit = false,
-                    x = position.X,
-                    y = position.Y,
-                    field = Owner
-                }, passLockstep: false);
+                SendBombingHitResult(position, false);
 
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
@@ -180,13 +208,7 @@ namespace Battleships.Game.Objects
             {
                 SpawnBuoyAt(position);
 
-                Peer?.Send(new BombingResultMessage
-                {
-                    hit = false,
-                    x = position.X,
-                    y = position.Y,
-                    field = Owner
-                }, passLockstep: false);
+                SendBombingHitResult(position, false);
 
                 // Wait a while before we move the fields again, so we can display the particle effect.
                 await Task.Delay(TimeSpan.FromSeconds(1));
@@ -197,13 +219,7 @@ namespace Battleships.Game.Objects
 
             if (part.Hit)
             {
-                Peer?.Send(new BombingResultMessage
-                {
-                    hit = false,
-                    x = position.X,
-                    y = position.Y,
-                    field = Owner
-                }, passLockstep: false);
+                SendBombingHitResult(position, false);
 
                 _coordinator?.SetBomber(Peer!.PeerId!.Value, true);
                 return;
@@ -222,8 +238,13 @@ namespace Battleships.Game.Objects
                 var ship = part.Ship!;
 
                 foreach (var shipPart in ship.Parts)
-                    shipPart?.Sink();
+                {
+                    shipPart!.Sink();
 
+                    // Spawn debris on each of the fields.
+                    SpawnShipDebrisAt(PositionToFieldCoordinates(shipPart!.InitialPosition)!.Value);
+                }
+                
                 SurroundSunkShipWithBuoys(ship.Position, ship.ShipFacing, ship.Length);
 
                 Peer?.Send(new ShipSunkMessage
@@ -237,14 +258,7 @@ namespace Battleships.Game.Objects
             }
 
             var unsunk = GetUnsunkPieces();
-            Peer?.Send(new BombingResultMessage
-            {
-                hit = true,
-                x = position.X,
-                y = position.Y,
-                field = Owner,
-                facing = part.Ship!.ShipFacing
-            }, passLockstep: unsunk > 0);
+            SendBombingHitResult(position, unsunk > 0, part);
 
             // If we have no more afloat pieces, send the field cleared message.
             if (unsunk == 0)

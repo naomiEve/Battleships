@@ -60,7 +60,7 @@ internal class ShipCannon : GameObject,
             .Fire();
 
         ThisGame!.AssetDatabase
-            .Get<SoundAsset>("explosion")?
+            .Get<SoundAsset>("cannon_shoot")?
             .Play();
 
         new Tween<float>()

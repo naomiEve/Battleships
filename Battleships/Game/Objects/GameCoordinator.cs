@@ -86,12 +86,17 @@ namespace Battleships.Game.Objects
                 // We've hit, continue bombing.
                 if (resultMesg.hit)
                 {
-                    SetState(GameState.PlayerBombing);
+                    GetGameObjectFromGame<GameLog>()!
+                        .AddMessageToLog($"And hit a ship!");
 
+                    SetState(GameState.PlayerBombing);
                     field.SpawnShipDebrisAt(pos);
                 }
                 else
                 {
+                    GetGameObjectFromGame<GameLog>()!
+                        .AddMessageToLog($"And missed.");
+
                     field.SpawnBuoyAt(pos);
                 }
             });
@@ -115,6 +120,9 @@ namespace Battleships.Game.Objects
             {
                 var shipSunkMesg = (ShipSunkMessage)mesg;
                 var field = _playfields![shipSunkMesg.playfield];
+
+                GetGameObjectFromGame<GameLog>()!
+                        .AddMessageToLog($"You've sunk a ship.");
 
                 field.SurroundSunkShipWithBuoys(new(shipSunkMesg.x, shipSunkMesg.y), shipSunkMesg.facing, shipSunkMesg.length);
             });

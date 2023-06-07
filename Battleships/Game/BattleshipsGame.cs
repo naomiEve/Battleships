@@ -101,6 +101,7 @@ namespace Battleships.Game
             AssetDatabase.Load<SoundAsset>("explosion", "./assets/explosion.wav");
             AssetDatabase.Load<SoundAsset>("seagulls", "./assets/seagulls.wav");
             AssetDatabase.Load<SoundAsset>("splash", "./assets/splash.wav");
+            AssetDatabase.Load<SoundAsset>("cannon_shoot", "./assets/cannon.wav");
 
             AssetDatabase.Load<MusicAsset>("waves", "./assets/waves.ogg");
             AssetDatabase.Load<TextureAsset>("crosshair", "./assets/crosshair.png");
@@ -137,8 +138,6 @@ namespace Battleships.Game
             ambience.CreateAmbientNoise(AssetDatabase.Get<SoundAsset>("seagulls")!, new Vector2(5f, 25f));
 
             AddGameObject<GameCoordinator>();
-            //AddGameObject<ShipCannon>();
-            //AddGameObject<DebugObject>();
         }
     }
 }
