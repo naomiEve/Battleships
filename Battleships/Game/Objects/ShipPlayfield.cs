@@ -24,6 +24,11 @@ namespace Battleships.Game.Objects
         private const int FIELD_SIZE = 10;
 
         /// <summary>
+        /// The offset from the top right of the tile to the center.
+        /// </summary>
+        public const float HALF_TILE_OFFSET = 0.5f;
+
+        /// <summary>
         /// The field.
         /// </summary>
         private readonly ShipPart[,] _field;
@@ -103,7 +108,7 @@ namespace Battleships.Game.Objects
 
             // First, select a random cannon to fire from on our field.
             var ourField = GetGameObjectFromGame<GameCoordinator>()!
-                .GetPlayfieldForPlayer((Owner + 1) % 2)!;
+                .GetPlayfieldForPlayer((Owner + 1) % GameCoordinator.PLAYER_COUNT)!;
 
             var cannon = ourField._field
                             .Flatten()
@@ -402,8 +407,8 @@ namespace Battleships.Game.Objects
             var part = ThisGame!.AddGameObject<ShipPart>();
             part.Ship = parent;
 
-            var begin = new Vector3(Position.X + x - 5 + 0.5f, 5f, Position.Y + y - 5 + 0.5f);
-            var end = new Vector3(Position.X + x - 5 + 0.5f, 0.5f, Position.Y + y - 5 + 0.5f);
+            var begin = new Vector3(Position.X + x - 5 + HALF_TILE_OFFSET,   5f, Position.Y + y - 5 + HALF_TILE_OFFSET);
+            var end   = new Vector3(Position.X + x - 5 + HALF_TILE_OFFSET, 0.5f, Position.Y + y - 5 + HALF_TILE_OFFSET);
             var playedSound = false;
 
             new Tween<Vector3>()
@@ -464,8 +469,6 @@ namespace Battleships.Game.Objects
 
                         if (_field[x, y] != null)
                             return true;
-
-                        Raylib.DrawCube(new Vector3(x - 5 + 0.5f, 0.5f, y - 5 + 0.5f), 1f, 1f, 1f, Color.GREEN);
                     }
                 }
 
@@ -535,7 +538,7 @@ namespace Battleships.Game.Objects
             var x = field.X - 5;
             var y = field.Y - 5;
 
-            return new Vector3(x + 0.5f, 0f, y + 0.5f) + Position;
+            return new Vector3(x + HALF_TILE_OFFSET, 0f, y + HALF_TILE_OFFSET) + Position;
         }
 
         /// <summary>
@@ -636,16 +639,18 @@ namespace Battleships.Game.Objects
         {
             const float spacing = 1f;
             const int halfSlices = 5;
+            const float color = 0.75f;
+            const float lineWidth = 3f;
 
             Rlgl.rlBegin(DrawMode.LINES);
-            Rlgl.rlSetLineWidth(3f);
+            Rlgl.rlSetLineWidth(lineWidth);
 
             for (var i = -halfSlices; i <= halfSlices; i++)
             {
-                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
-                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
-                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
-                Rlgl.rlColor3f(0.75f, 0.75f, 0.75f);
+                Rlgl.rlColor3f(color, color, color);
+                Rlgl.rlColor3f(color, color, color);
+                Rlgl.rlColor3f(color, color, color);
+                Rlgl.rlColor3f(color, color, color);
 
                 Rlgl.rlVertex3f(Position.X + i * spacing, Position.Y, Position.Z + -halfSlices * spacing);
                 Rlgl.rlVertex3f(Position.X + i * spacing, Position.Y, Position.Z + halfSlices * spacing);
@@ -660,11 +665,14 @@ namespace Battleships.Game.Objects
         /// <inheritdoc/>
         public RayCollision Collide(Ray ray)
         {
+            // Every tile has size 1, so from the center we have 5 tiles to the left and right.
+            const float halfTiles = FIELD_SIZE / 2f;
+
             return Raylib.GetRayCollisionQuad(ray,
-                new Vector3(Position.X + -5f, 0f, Position.Z + -5f),
-                new Vector3(Position.X + -5f, 0f, Position.Z + 5f),
-                new Vector3(Position.X + 5f, 0f, Position.Z + 5f),
-                new Vector3(Position.X + 5f, 0f, Position.Z + -5f)
+                new Vector3(Position.X - halfTiles, 0f, Position.Z - halfTiles),
+                new Vector3(Position.X - halfTiles, 0f, Position.Z + halfTiles),
+                new Vector3(Position.X + halfTiles, 0f, Position.Z + halfTiles),
+                new Vector3(Position.X + halfTiles, 0f, Position.Z - halfTiles)
             );
         }
     }

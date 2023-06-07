@@ -85,7 +85,7 @@ namespace Battleships.Game.Objects
                 var ourId = Peer!.PeerId.Value;
                 var targetId = Objective == CameraObjective.MoveToSelf ?
                     ourId :
-                    (ourId + 1) % 2;
+                    (ourId + 1) % GameCoordinator.PLAYER_COUNT;
 
                 var target = _coordinator!.GetPlayfieldForPlayer(targetId);
 

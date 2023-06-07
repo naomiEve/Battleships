@@ -19,6 +19,11 @@ namespace Battleships.Game.Objects
         const float PLAYFIELD_DISTANCE = 30f;
 
         /// <summary>
+        /// The player count.
+        /// </summary>
+        public const int PLAYER_COUNT = 2;
+
+        /// <summary>
         /// The current state of the game.
         /// </summary>
         public GameState State { get; private set; }
@@ -41,8 +46,8 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The sizes of the ships we're placing in the initial round.
         /// </summary>
-        //private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2, 1, 1, 1, 1 };
-        private readonly static int[] _shipLengths = { 4, 3 };
+        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2 };
+        //private readonly static int[] _shipLengths = { 4, 3 };
 
         /// <summary>
         /// The current index of the ship length.
@@ -105,8 +110,8 @@ namespace Battleships.Game.Objects
             {
                 var clearedMesg = (FieldClearedMessage)mesg;
 
-                var winner = (clearedMesg.id + 1) % 2;
-                SetGameOver(winner, true);                
+                var winner = (clearedMesg.id + 1) % PLAYER_COUNT;
+                SetGameOver(winner, true);   
             });
 
             Peer?.MessageRegistry.RegisterMessage<GameOverMessage>(mesg =>
@@ -167,7 +172,7 @@ namespace Battleships.Game.Objects
             if (count == _playfields!.Length)
             {
                 // Roll a die to decide who gets the next move.
-                var player = Random.Shared.Next(0, 1);
+                var player = Random.Shared.Next(0, PLAYER_COUNT);
                 SetBomber(player, true);
             }
         }
