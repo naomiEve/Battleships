@@ -53,6 +53,11 @@ namespace Battleships.Framework
         private Vector2Int _lastDimensions;
 
         /// <summary>
+        /// The list of game objects about to be disposed.
+        /// </summary>
+        private List<GameObject> _disposeList;
+
+        /// <summary>
         /// Construct a new game window.
         /// </summary>
         /// <param name="dimensions">The dimensions.</param>
@@ -64,8 +69,9 @@ namespace Battleships.Framework
             Title = name;
             _launchOptions = opts;
 
-            _gameObjects = new List<GameObject>();
-            AssetDatabase = new AssetDatabase();
+            _gameObjects = new();
+            _disposeList = new();
+            AssetDatabase = new();
 
             AddGameObject<TweenEngine>();
         }
@@ -130,7 +136,7 @@ namespace Battleships.Framework
             where TGameObject : GameObject, new()
         {
             var obj = new TGameObject();
-            
+
             // If this object is a singleton, find if we perhaps already have one instantiated.
             if (obj is ISingletonObject)
             {
@@ -170,6 +176,33 @@ namespace Battleships.Framework
         }
 
         /// <summary>
+        /// Gets all the game objects of a given type.
+        /// </summary>
+        /// <typeparam name="TGameObject">The game object.</typeparam>
+        /// <returns>The list of game objects.</returns>
+        public List<TGameObject> GetAllGameObjectsOfType<TGameObject>()
+            where TGameObject : GameObject
+        {
+            return _gameObjects.Where(obj => obj is not null and TGameObject)
+                .Select(obj => (obj as TGameObject)!)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Removes a game object from the list of objects.
+        /// </summary>
+        /// <param name="obj"></param>
+        public void RemoveGameObject(GameObject obj)
+        {
+            // We do not wanna destroy any indestructible objects.
+            if (obj is IIndestructibleObject)
+                return;
+
+            obj.Destroy();
+            _disposeList.Add(obj);
+        }
+
+        /// <summary>
         /// Cast a ray within the scene.
         /// </summary>
         /// <param name="ray">The ray.</param>
@@ -184,7 +217,7 @@ namespace Battleships.Framework
 
                 if (obj is not IRaycastTargettableObject rto)
                     continue;
-                
+
                 var collision = rto.Collide(ray);
                 if (collision.hit)
                     return collision;
@@ -204,16 +237,32 @@ namespace Battleships.Framework
         protected virtual void Start() { }
 
         /// <summary>
+        /// Disposes everything from the dispose list.
+        /// </summary>
+        private void DisposeAllFromDisposeList()
+        {
+            if (_disposeList.Count <= 0)
+                return;
+         
+            foreach (var go in _disposeList)
+                _gameObjects.Remove(go);
+
+            _disposeList.Clear();
+        }
+
+        /// <summary>
         /// Runs a single update tick.
         /// </summary>
         /// <param name="dt">The time since the last frame.</param>
         protected virtual void Update(float dt)
         {
+            DisposeAllFromDisposeList();
+
             for (var i = 0; i < _gameObjects.Count; i++)
             {
                 if (!_gameObjects[i].Enabled)
                     continue;
-                
+
                 _gameObjects[i].Update(dt);
             }
         }
@@ -223,13 +272,22 @@ namespace Battleships.Framework
         /// </summary>
         protected virtual void Draw()
         {
-            foreach (var go in _gameObjects)
+            try
             {
-                if (!go.Enabled)
-                    continue;
+                foreach (var go in _gameObjects)
+                {
+                    if (!go.Enabled)
+                        continue;
 
-                if (go is IDrawableGameObject dgo)
-                    dgo.Draw();
+                    if (go is IDrawableGameObject dgo)
+                        dgo.Draw();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // I've no idea how this one happened, especially as we never add or remove any gameobjects
+                // within Draw(). But this did happen in testing, so /shrug.
+                Console.WriteLine("Oops. GameObject list was modified during Draw(), this should not happen.");
             }
         }
 
@@ -254,7 +312,7 @@ namespace Battleships.Framework
         protected virtual void Destroy()
         {
             foreach (var go in _gameObjects)
-                go.Destroy();   
+                go.Destroy();
         }
     }
 }

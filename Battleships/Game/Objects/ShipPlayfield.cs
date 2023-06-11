@@ -98,6 +98,30 @@ namespace Battleships.Game.Objects
         }
 
         /// <summary>
+        /// Clears the playfield.
+        /// </summary>
+        public void ClearPlayfield()
+        {
+            for (var x = 0; x < FIELD_SIZE; x++)
+            {
+                for (var y = 0; y < FIELD_SIZE; y++)
+                {
+                    if (_field[x, y] != null)
+                        ThisGame!.RemoveGameObject(_field[x, y]);
+
+                    if (_debrisField[x, y] != null)
+                        ThisGame!.RemoveGameObject(_debrisField[x, y]);
+
+                    _field[x, y] = null!;
+                    _debrisField[x, y] = null!;
+                }
+            }
+
+            FinishedBuilding = false;
+            ShipCounter!.ShipsLeft = GameCoordinator.ShipCount;
+        }
+
+        /// <summary>
         /// Does the field bombing cinematic.
         /// </summary>
         /// <param name="position">The position to bomb.</param>
@@ -168,6 +192,22 @@ namespace Battleships.Game.Objects
             }
 
             return _debrisField[position.X, position.Y] != null;
+        }
+
+        /// <summary>
+        /// Does the field have a ship at a position?
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>Whether it has a ship there.</returns>
+        public bool HasShipAt(Vector2Int position)
+        {
+            if (position.X < 0 || position.X >= FIELD_SIZE ||
+                position.Y < 0 || position.Y >= FIELD_SIZE)
+            {
+                return true;
+            }
+
+            return _field[position.X, position.Y] != null;
         }
 
         /// <summary>
@@ -242,12 +282,14 @@ namespace Battleships.Game.Objects
             {
                 var ship = part.Ship!;
 
+                var playSound = true;
                 foreach (var shipPart in ship.Parts)
                 {
                     shipPart!.Sink();
 
                     // Spawn debris on each of the fields.
-                    SpawnShipDebrisAt(PositionToFieldCoordinates(shipPart!.InitialPosition)!.Value);
+                    SpawnShipDebrisAt(PositionToFieldCoordinates(shipPart!.InitialPosition)!.Value, playSound);
+                    playSound = false;
                 }
                 
                 SurroundSunkShipWithBuoys(ship.Position, ship.ShipFacing, ship.Length);
@@ -271,7 +313,7 @@ namespace Battleships.Game.Objects
                 Peer?.Send(new FieldClearedMessage
                 {
                     id = Peer!.PeerId!.Value
-                });
+                }, passLockstep: !Peer!.IsHost);
             }
         }
 
@@ -279,8 +321,12 @@ namespace Battleships.Game.Objects
         /// Spawns ship debris at a position.
         /// </summary>
         /// <param name="position">The position.</param>
-        public void SpawnShipDebrisAt(Vector2Int position)
+        public void SpawnShipDebrisAt(Vector2Int position, bool playSound = true)
         {
+            // Dirty hack.
+            if (HasDebrisAt(position) && _debrisField[position.X, position.Y] is Buoy)
+                ThisGame!.RemoveGameObject(_debrisField[position.X, position.Y]);
+
             var pos = FieldCoordinatesToPosition(position);
 
             var debris = ThisGame!.AddGameObject<ShipDebris>();
@@ -288,7 +334,7 @@ namespace Battleships.Game.Objects
             debris.Playfield = this;
             debris.FloatUp();
 
-            SpawnFireAt(position, debris);
+            SpawnFireAt(position, debris, playSound);
 
             _debrisField[position.X, position.Y] = debris;
         }
@@ -298,7 +344,8 @@ namespace Battleships.Game.Objects
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="followed">The object to follow.</param>
-        public void SpawnFireAt(Vector2Int position, IPositionedObject followed = null!)
+        /// <param name="playSound">Whether we should play the explosion sound while doing so.</param>
+        public void SpawnFireAt(Vector2Int position, IPositionedObject followed = null!, bool playSound = true)
         {
             var pos = FieldCoordinatesToPosition(position);
             pos.Y += 0.3f;
@@ -311,9 +358,12 @@ namespace Battleships.Game.Objects
                 .Following(followed, new Vector3(0, 0.4f, 0))
                 .Fire();
 
-            ThisGame!.AssetDatabase
-                .Get<SoundAsset>("explosion")?
-                .Play();
+            if (playSound)
+            {
+                ThisGame!.AssetDatabase
+                    .Get<SoundAsset>("explosion")?
+                    .Play();
+            }
         }
 
         /// <summary>
@@ -345,6 +395,9 @@ namespace Battleships.Game.Objects
         public void SpawnBuoyAt(Vector2Int position, bool playSound = true)
         {
             if (HasDebrisAt(position))
+                return;
+
+            if (HasShipAt(position))
                 return;
 
             var buoy = ThisGame!.AddGameObject<Buoy>();
@@ -584,12 +637,6 @@ namespace Battleships.Game.Objects
                     if (x < 0 || x >= FIELD_SIZE || 
                         y < 0 || y >= FIELD_SIZE)
                         continue;
-
-                    //if ((x == beginningPosition.X && facing == Ship.Facing.Down) || 
-                    //    (y == beginningPosition.Y && facing == Ship.Facing.Right))
-                    //    continue;
-
-                    Console.WriteLine($"[x:{x}, y:{y}]");
 
                     SpawnBuoyAt(new(x, y), (x == min.X && y == min.Y));
                 }

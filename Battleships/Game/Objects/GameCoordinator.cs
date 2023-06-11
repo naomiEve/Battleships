@@ -46,8 +46,7 @@ namespace Battleships.Game.Objects
         /// <summary>
         /// The sizes of the ships we're placing in the initial round.
         /// </summary>
-        private readonly static int[] _shipLengths = { 4, 3, 3, 2, 2, 2 };
-        //private readonly static int[] _shipLengths = { 4, 3 };
+        private readonly static int[] _shipLengths = { 6, 4, 4, 3, 3, 3, 2, 2, 2, 2 };
 
         /// <summary>
         /// The current index of the ship length.
@@ -61,7 +60,8 @@ namespace Battleships.Game.Objects
             {
                 var buildMesg = (FinishedBuildingMessage)mesg;
 
-                GetGameObjectFromGame<GameLog>()!.AddMessageToLog($"Player {buildMesg.id} finished building.");
+                GetGameObjectFromGame<GameLog>()!
+                    .AddMessageToLog($"Player {buildMesg.id + 1} finished building.");
 
                 _playfields![buildMesg.id].FinishedBuilding = true;
                 CheckIfAllFinishedBuilding();
@@ -130,6 +130,11 @@ namespace Battleships.Game.Objects
                         .AddMessageToLog($"You've sunk a ship.");
 
                 field.SurroundSunkShipWithBuoys(new(shipSunkMesg.x, shipSunkMesg.y), shipSunkMesg.facing, shipSunkMesg.length);
+            });
+
+            Peer?.MessageRegistry.RegisterMessage<GameStartingMessage>(mesg =>
+            {
+                RestartGame(false);
             });
 
             ThisGame!.AddGameObject<GameLog>();
@@ -216,6 +221,8 @@ namespace Battleships.Game.Objects
                     _camera!.Objective = CameraObjective.MoveToSelf;
                     _shipLengthIndex = 0;
 
+                    Console.WriteLine($"_shipLengthIndex={_shipLengthIndex}");
+
                     foreach (var field in _playfields!)
                         field.SetPreviewLength(_shipLengths[_shipLengthIndex]);
                     break;
@@ -266,11 +273,13 @@ namespace Battleships.Game.Objects
         /// </summary>
         /// <param name="winner">The winner index.</param>
         /// <param name="sendMessage">Should we send a message to the other peer?</param>
-        public void SetGameOver(int winner, bool sendMessage)
+        public async void SetGameOver(int winner, bool sendMessage)
         {
+            const int SECONDS_TO_RESTART = 5;
+
             SetState(GameState.GameOver);
             GetGameObjectFromGame<AnnouncementController>()!
-                .DisplayAnnouncement(winner == 1 ? AnnouncementController.AnnouncementType.Player1Won : AnnouncementController.AnnouncementType.Player2Won);
+                .DisplayAnnouncement(winner == 0 ? AnnouncementController.AnnouncementType.Player1Won : AnnouncementController.AnnouncementType.Player2Won);
 
             if (sendMessage)
             {
@@ -278,7 +287,38 @@ namespace Battleships.Game.Objects
                 {
                     winner = winner
                 }, SendMode.Extra);
+
+                await Task.Delay(TimeSpan.FromSeconds(SECONDS_TO_RESTART));
+
+                RestartGame(true);
             }
+        }
+
+        /// <summary>
+        /// Cleans up the stage and restarts the game.
+        /// </summary>
+        public void RestartGame(bool sendMessage)
+        {
+            var objs = ThisGame!.GetAllGameObjectsOfType<ParticleEffect>()
+                .Select(obj => obj as GameObject)
+                .Concat(ThisGame!.GetAllGameObjectsOfType<Ship>());
+
+            foreach (var field in _playfields!)
+                field.ClearPlayfield();
+
+            foreach (var obj in objs)
+                ThisGame!.RemoveGameObject(obj);
+
+            SetState(GameState.ShipBuilding);
+
+            GetGameObjectFromGame<AnnouncementController>()!
+                .DisplayAnnouncement(AnnouncementController.AnnouncementType.BuildYourFleet);
+
+            GetGameObjectFromGame<GameLog>()!
+                .AddMessageToLog("Welcome to battleships.");
+
+            if (sendMessage)
+                Peer?.Send(new GameStartingMessage(), SendMode.Extra);
         }
 
         /// <inheritdoc/>
@@ -297,7 +337,8 @@ namespace Battleships.Game.Objects
                     }
                     else
                     {
-                        GetGameObjectFromGame<GameLog>()!.AddMessageToLog($"Player {Peer?.PeerId} finished building.");
+                        GetGameObjectFromGame<GameLog>()!
+                            .AddMessageToLog($"Player {Peer?.PeerId + 1} finished building.");
 
                         _playfields![Peer!.PeerId!.Value].FinishedBuilding = true;
                         Peer!.Send(new FinishedBuildingMessage

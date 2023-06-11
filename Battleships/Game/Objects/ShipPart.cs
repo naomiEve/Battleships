@@ -188,5 +188,12 @@ namespace Battleships.Game.Objects
                 Raylib.DrawModelEx(_model.Model, pos, axis, 0f + _sinkRotation, new(SHIP_PART_SCALE), color);
             }
         }
+
+        /// <inheritdoc/>
+        public override void Destroy()
+        {
+            if (Cannon != null)
+                ThisGame!.RemoveGameObject(Cannon);
+        }
     }
 }
